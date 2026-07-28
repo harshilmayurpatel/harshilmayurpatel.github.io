@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Harshil Patel — AI Engineer</title>
+<meta name="description" content="Harshil Patel — AI Engineer, Data Analyst &amp; Cloud Deployment. Portfolio, projects, and resume." />
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="assets/css/styles.css" />
+</head>
+<body>
+
+<!-- Icon sprite -->
+<svg style="display:none" aria-hidden="true">
+  <symbol id="i-github" viewBox="0 0 24 24"><path fill="currentColor" d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></symbol>
+  <symbol id="i-linkedin" viewBox="0 0 24 24"><path fill="currentColor" d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.137 1.445-2.137 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></symbol>
+  <symbol id="i-mail" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" d="M3 5.5h18v13H3z"/><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" d="M3 6l9 7 9-7"/></symbol>
+  <symbol id="i-phone" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" d="M6.6 10.8c1.4 2.8 3.8 5.1 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1C10.4 21 3 13.6 3 4.5c0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.3.2 2.5.6 3.6.1.4 0 .8-.2 1L6.6 10.8z"/></symbol>
+  <symbol id="i-external" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" d="M7 17L17 7M9 7h8v8"/></symbol>
+  <symbol id="i-download" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" d="M12 3v12m0 0l-4-4m4 4l4-4M4 19h16"/></symbol>
+</svg>
+
+
+<!-- Pipeline rail (desktop side nav) -->
+<nav class="rail" id="rail" aria-label="Section navigation">
+  <div class="rail-line"></div>
+  <div class="rail-progress" id="railProgress"></div>
+  <a href="#ingest" class="rail-node" data-section="ingest"><span class="rail-num">01</span><span class="rail-label">Ingest</span></a>
+  <a href="#process" class="rail-node" data-section="process"><span class="rail-num">02</span><span class="rail-label">Process</span></a>
+  <a href="#build" class="rail-node" data-section="build"><span class="rail-num">03</span><span class="rail-label">Build</span></a>
+  <a href="#stack" class="rail-node" data-section="stack"><span class="rail-num">04</span><span class="rail-label">Stack</span></a>
+  <a href="#deploy" class="rail-node" data-section="deploy"><span class="rail-num">05</span><span class="rail-label">Deploy</span></a>
+</nav>
+
+<!-- Top bar (mobile + brand/actions) -->
+<header class="topbar">
+  <a href="#top" class="brand">HP<span class="brand-dot">.</span></a>
+  <button class="menu-btn" id="menuBtn" aria-label="Open menu" aria-expanded="false">
+    <span></span><span></span><span></span>
+  </button>
+  <div class="topbar-actions">
+    <a class="btn btn-ghost" href="mailto:hp21565n@pace.edu">Email me</a>
+    <div class="resume-dropdown">
+      <button class="btn btn-solid" id="resumeBtn">Résumé <svg width="10" height="6" viewBox="0 0 10 6" fill="none"><path d="M1 1L5 5L9 1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></button>
+      <div class="resume-menu" id="resumeMenu">
+        <a href="assets/resume/Harshil_Patel_Resume_AI_Engineer.pdf" download>AI Engineer — tailored</a>
+        <a href="assets/resume/Harshil_Patel_Resume_General.pdf" download>General résumé</a>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- Mobile nav drawer -->
+<div class="mobile-nav" id="mobileNav">
+  <a href="#ingest">01 · Ingest</a>
+  <a href="#process">02 · Process</a>
+  <a href="#build">03 · Build</a>
+  <a href="#stack">04 · Stack</a>
+  <a href="#deploy">05 · Deploy</a>
+  <a href="mailto:hp21565n@pace.edu" class="mobile-cta">Email me</a>
+</div>
+
+<main id="top">
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-inner">
+      <div class="hero-copy">
+        <p class="eyebrow">AI Engineer &middot; Data Analyst &middot; Cloud Deployment</p>
+        <h1 class="hero-title">Harshil Patel</h1>
+        <p class="hero-sub">I turn raw data into deployed, decision‑ready AI systems — from a messy CSV to a model behind a live endpoint.</p>
+        <div class="hero-cta">
+          <a href="#build" class="btn btn-solid">See the work</a>
+          <a href="#deploy" class="btn btn-outline">Get in touch</a>
+        </div>
+        <div class="hero-links">
+          <a href="https://github.com/harshilmayurpatel" target="_blank" rel="noopener"><svg class="icon"><use href="#i-github"/></svg>GitHub</a>
+          <a href="https://www.linkedin.com/in/harshilmayurpatel" target="_blank" rel="noopener"><svg class="icon"><use href="#i-linkedin"/></svg>LinkedIn</a>
+        </div>
+      </div>
+
+      <div class="hero-visual">
+        <div class="photo-frame photo-frame-sticker">
+          <img src="assets/images/headshot-sticker.png" alt="Harshil Patel" loading="eager" />
+        </div>
+        <div class="hero-status">
+          <p class="hero-status-line"><span class="status-dot"></span>Open to work &middot; Jersey City, NJ</p>
+          <div class="status-stack">
+            <span>Python</span><span>PyTorch</span><span>LangChain</span><span>FastAPI</span><span>AWS</span><span>Docker</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="scroll-hint">Scroll through the pipeline ↓</div>
+  </section>
+
+  <!-- 01 INGEST — About + Education -->
+  <section class="stage" id="ingest">
+    <div class="stage-inner">
+      <p class="stage-eyebrow">Stage 01 — Ingest</p>
+      <h2 class="stage-title">Where the data comes from</h2>
+      <p class="stage-lede">Every pipeline starts with a source. Mine's a Computer Engineering degree in Mumbai, three semesters of graduate coursework in New York, and a growing stack of AI tooling built on top of both.</p>
+
+      <div class="about-grid">
+        <p class="about-bio">
+          I'm an AI/ML engineer in training with hands-on experience across data analysis, machine learning, and AI-driven applications. My work sits at the intersection of three things: getting messy data into shape, building models that learn something useful from it, and shipping that model somewhere a real user can hit it — using tools like FastAPI, Docker, and AWS. I'm currently based in Jersey City and looking for AI Engineer roles that blend data analysis with cloud deployment.
+        </p>
+
+        <div class="edu-list">
+          <div class="edu-card">
+            <p class="edu-degree">M.S. in Information Systems</p>
+            <p class="edu-school">Pace University, New York, NY</p>
+            <p class="edu-meta">Concentration: Information Systems &middot; GPA 3.67 &middot; Expected May 2026</p>
+          </div>
+          <div class="edu-card">
+            <p class="edu-degree">B.E. in Computer Engineering</p>
+            <p class="edu-school">Vidyavardhini's College of Engineering &amp; Technology, Mumbai</p>
+            <p class="edu-meta">CGPA 8.29 / 10.00 &middot; May 2023</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="coursework">
+        <p class="coursework-label">Relevant coursework</p>
+        <div class="chip-row">
+          <span class="chip">Machine Learning</span>
+          <span class="chip">Artificial Intelligence</span>
+          <span class="chip">Data Science</span>
+          <span class="chip">Applied Data Science</span>
+          <span class="chip">Data Warehousing &amp; Mining</span>
+          <span class="chip">Database Management Systems</span>
+          <span class="chip">Analysis of Algorithms</span>
+          <span class="chip">Cryptography &amp; System Security</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 02 PROCESS — Experience -->
+  <section class="stage stage-alt" id="process">
+    <div class="stage-inner">
+      <p class="stage-eyebrow">Stage 02 — Process</p>
+      <h2 class="stage-title">Where it gets refined</h2>
+      <p class="stage-lede">Real systems, real constraints. Here's where I've put data handling into practice.</p>
+
+      <div class="timeline">
+        <div class="timeline-item">
+          <div class="timeline-marker"></div>
+          <div class="timeline-content">
+            <div class="timeline-head">
+              <p class="timeline-role">Database Manager <span>· Learning Intern</span></p>
+              <p class="timeline-date">Jun 2023 – Jun 2024</p>
+            </div>
+            <p class="timeline-org">Rinfoline Tech Solutions</p>
+            <ul class="timeline-list">
+              <li>Designed and optimized relational database structures, improving data retrieval efficiency and overall system performance.</li>
+              <li>Developed and maintained advanced SQL queries, stored procedures, and scripts for daily business operations.</li>
+              <li>Supported data migration and integration between legacy and modern systems, improving workflow accuracy.</li>
+              <li>Partnered with development teams to implement database security protocols and access control.</li>
+              <li>Tuned performance and automated repetitive database tasks to boost productivity.</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="timeline-item">
+          <div class="timeline-marker timeline-marker-sm"></div>
+          <div class="timeline-content">
+            <div class="timeline-head">
+              <p class="timeline-role">Technical &amp; Sponsorship Team Head <span>· Volunteer</span></p>
+              <p class="timeline-date">Aug 2018 – May 2020</p>
+            </div>
+            <p class="timeline-org">Ignite '19 — Technical Coding Event</p>
+            <ul class="timeline-list">
+              <li>Designed problem statements for 200+ participants and secured event sponsorships.</li>
+              <li>Led end-to-end planning, logistics, and execution for a large-scale technical fest.</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="timeline-item">
+          <div class="timeline-marker timeline-marker-sm"></div>
+          <div class="timeline-content">
+            <div class="timeline-head">
+              <p class="timeline-role">Coordinator <span>· Volunteer</span></p>
+              <p class="timeline-date">Aug 2019 – May 2020</p>
+            </div>
+            <p class="timeline-org">24-Hour Hackathon</p>
+            <ul class="timeline-list">
+              <li>Coordinated multiple teams and provided technical guidance across a 24-hour build competition.</li>
+              <li>Managed event execution and media coverage.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 03 BUILD — Projects -->
+  <section class="stage" id="build">
+    <div class="stage-inner">
+      <p class="stage-eyebrow">Stage 03 — Build</p>
+      <h2 class="stage-title">What comes out the other end</h2>
+      <p class="stage-lede">A sample of things I've shipped — scraping pipelines, dashboards, and a couple of AI side quests.</p>
+
+      <div class="project-grid">
+        <article class="project-card project-card-featured">
+          <p class="project-tag">Data Pipeline &middot; Python</p>
+          <h3 class="project-title">NBA Data Scraping &amp; Statistical Analysis</h3>
+          <p class="project-desc">An automated scraping pipeline pulling real-time NBA statistics, processed into 18+ visualizations covering performance trends and season insights.</p>
+          <ul class="project-stats">
+            <li><strong>18+</strong> visualizations</li>
+            <li><strong>80%</strong> less redundancy</li>
+            <li><strong>&lt;30s</strong> runtime</li>
+          </ul>
+          <div class="chip-row">
+            <span class="chip chip-sm">BeautifulSoup</span>
+            <span class="chip chip-sm">Pandas</span>
+            <span class="chip chip-sm">Matplotlib</span>
+            <span class="chip chip-sm">Seaborn</span>
+          </div>
+          <div class="project-footer">
+            <a class="project-link" href="https://github.com/harshilmayurpatel/Data-Scrapping" target="_blank" rel="noopener"><svg class="icon"><use href="#i-github"/></svg>View on GitHub</a>
+          </div>
+        </article>
+
+        <article class="project-card project-card-featured">
+          <p class="project-tag">Dashboard &middot; Tableau</p>
+          <h3 class="project-title">Electric Vehicle Market Analysis</h3>
+          <p class="project-desc">An interactive Tableau dashboard analyzing EV adoption across the U.S. — growth trends, state-wise adoption maps, and BEV vs. PHEV distribution.</p>
+          <ul class="project-stats">
+            <li><strong>KPI</strong> tracking</li>
+            <li><strong>State</strong>-level maps</li>
+            <li><strong>Clean</strong> data pipeline</li>
+          </ul>
+          <div class="chip-row">
+            <span class="chip chip-sm">Tableau</span>
+            <span class="chip chip-sm">Excel</span>
+            <span class="chip chip-sm">Data Cleaning</span>
+          </div>
+          <div class="project-footer">
+            <a class="project-link" href="https://github.com/harshilmayurpatel/Electric-Vehicle-Data-Analysis" target="_blank" rel="noopener"><svg class="icon"><use href="#i-github"/></svg>View on GitHub</a>
+          </div>
+        </article>
+
+        <article class="project-card project-card-featured">
+          <p class="project-tag">Search Algorithms &middot; Python</p>
+          <h3 class="project-title">AI Puzzle Solver — Sokoban</h3>
+          <p class="project-desc">A puzzle-solving system using Depth-First Search to compute optimal moves, with an intelligent hint mechanism layered on top for gameplay assistance.</p>
+          <div class="chip-row">
+            <span class="chip chip-sm">DFS</span>
+            <span class="chip chip-sm">Search Algorithms</span>
+            <span class="chip chip-sm">Python</span>
+          </div>
+        </article>
+      </div>
+
+      <p class="also-built-label">Also built</p>
+      <div class="mini-grid">
+        <div class="mini-card">
+          <p class="mini-title">VR Game Development</p>
+          <p class="mini-desc">Multiplayer VR titles in Unity3D — physics-based interaction and AI-driven opponents.</p>
+          <div class="chip-row"><span class="chip chip-sm">Unity3D</span><span class="chip chip-sm">C#</span><span class="chip chip-sm">Blender</span></div>
+        </div>
+        <div class="mini-card">
+          <p class="mini-title">Travel Buddy</p>
+          <p class="mini-desc">An Android app for navigation, distance calculation, and live route planning.</p>
+          <div class="chip-row"><span class="chip chip-sm">Android Studio</span><span class="chip chip-sm">Java</span><span class="chip chip-sm">Maps API</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 04 STACK — Skills -->
+  <section class="stage stage-alt" id="stack">
+    <div class="stage-inner">
+      <p class="stage-eyebrow">Stage 04 — Stack</p>
+      <h2 class="stage-title">What's in the pipeline</h2>
+      <p class="stage-lede">The tools I reach for at each step, from raw data to a deployed endpoint.</p>
+
+      <div class="skill-grid">
+        <div class="skill-card">
+          <p class="skill-cat">Machine Learning &amp; AI</p>
+          <div class="chip-row">
+            <span class="chip">Scikit-learn</span><span class="chip">XGBoost</span><span class="chip">TensorFlow</span><span class="chip">PyTorch</span><span class="chip">CNN / RNN</span><span class="chip">NLP</span>
+          </div>
+        </div>
+        <div class="skill-card">
+          <p class="skill-cat">Generative AI &amp; LLM Tools</p>
+          <div class="chip-row">
+            <span class="chip">LangChain</span><span class="chip">RAG</span><span class="chip">Prompt Engineering</span><span class="chip">FAISS</span><span class="chip">OpenAI API</span>
+          </div>
+        </div>
+        <div class="skill-card">
+          <p class="skill-cat">Data Processing &amp; Analytics</p>
+          <div class="chip-row">
+            <span class="chip">Pandas</span><span class="chip">NumPy</span><span class="chip">BeautifulSoup</span><span class="chip">EDA</span><span class="chip">Statistical Analysis</span>
+          </div>
+        </div>
+        <div class="skill-card">
+          <p class="skill-cat">Data Visualization</p>
+          <div class="chip-row">
+            <span class="chip">Power BI</span><span class="chip">Tableau</span><span class="chip">Matplotlib</span><span class="chip">Seaborn</span><span class="chip">Excel</span>
+          </div>
+        </div>
+        <div class="skill-card">
+          <p class="skill-cat">Cloud &amp; Deployment</p>
+          <div class="chip-row">
+            <span class="chip">AWS (EC2, S3)</span><span class="chip">FastAPI</span><span class="chip">Docker</span><span class="chip">REST APIs</span><span class="chip">Azure</span>
+          </div>
+        </div>
+        <div class="skill-card">
+          <p class="skill-cat">Databases</p>
+          <div class="chip-row">
+            <span class="chip">MySQL</span><span class="chip">PostgreSQL</span><span class="chip">MongoDB</span><span class="chip">Query Optimization</span>
+          </div>
+        </div>
+        <div class="skill-card">
+          <p class="skill-cat">Programming</p>
+          <div class="chip-row">
+            <span class="chip">Python</span><span class="chip">Java</span><span class="chip">C++</span><span class="chip">JavaScript</span><span class="chip">OOP</span><span class="chip">DSA</span>
+          </div>
+        </div>
+        <div class="skill-card">
+          <p class="skill-cat">Tools</p>
+          <div class="chip-row">
+            <span class="chip">Git</span><span class="chip">Jira</span><span class="chip">Trello</span><span class="chip">VS Code</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="cert-row">
+        <div class="cert-block">
+          <p class="coursework-label">Currently leveling up</p>
+          <ul class="cert-list">
+            <li>Microsoft Power BI Data Analyst Certification <span class="tag-progress">in progress</span></li>
+            <li>Google Data Analytics Professional Certificate <span class="tag-progress">in progress</span></li>
+          </ul>
+        </div>
+        <div class="cert-block">
+          <p class="coursework-label">Certified &amp; published</p>
+          <ul class="cert-list">
+            <li>Artificial Intelligence Using Deep Learning — Don Bosco Institute of Technology</li>
+            <li>INSPIRE Program — Pace University</li>
+            <li>"Web Scraping and Data Analysis using BeautifulSoup" — accepted for presentation at ICERI, mentored by Prof. Mary Tadeschi</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 05 DEPLOY — Contact -->
+  <section class="stage stage-deploy" id="deploy">
+    <div class="stage-inner">
+      <p class="stage-eyebrow">Stage 05 — Deploy</p>
+      <h2 class="stage-title">Ship it — let's talk</h2>
+      <p class="stage-lede">Open to AI Engineer roles that blend data analysis and cloud deployment. If that's what you're hiring for, I'd like to hear from you.</p>
+
+      <div class="deploy-grid">
+        <a class="deploy-card" href="mailto:hp21565n@pace.edu">
+          <svg class="icon"><use href="#i-mail"/></svg>
+          <span class="deploy-label">Email</span>
+          <span class="deploy-value">hp21565n@pace.edu</span>
+        </a>
+        <a class="deploy-card" href="tel:12012758800">
+          <svg class="icon"><use href="#i-phone"/></svg>
+          <span class="deploy-label">Phone</span>
+          <span class="deploy-value">(201) 275-8800</span>
+        </a>
+        <a class="deploy-card" href="https://www.linkedin.com/in/harshilmayurpatel" target="_blank" rel="noopener">
+          <svg class="icon"><use href="#i-linkedin"/></svg>
+          <span class="deploy-label">LinkedIn</span>
+          <span class="deploy-value">/in/harshilmayurpatel</span>
+        </a>
+        <a class="deploy-card" href="https://github.com/harshilmayurpatel" target="_blank" rel="noopener">
+          <svg class="icon"><use href="#i-github"/></svg>
+          <span class="deploy-label">GitHub</span>
+          <span class="deploy-value">/harshilmayurpatel</span>
+        </a>
+      </div>
+
+      <div class="deploy-resumes">
+        <a href="assets/resume/Harshil_Patel_Resume_AI_Engineer.pdf" download class="btn btn-solid"><svg class="icon"><use href="#i-download"/></svg>Download AI Engineer résumé</a>
+        <a href="assets/resume/Harshil_Patel_Resume_General.pdf" download class="btn btn-outline"><svg class="icon"><use href="#i-download"/></svg>Download general résumé</a>
+      </div>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <p>Harshil Patel &middot; Jersey City, NJ</p>
+    <p class="footer-meta">Built with HTML, CSS &amp; JS</p>
+  </footer>
+
+</main>
+
+<script src="assets/js/app.js"></script>
+</body>
+</html>
