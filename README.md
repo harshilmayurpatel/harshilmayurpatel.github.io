@@ -14,11 +14,3 @@ Structure
 Running it
 
 Just open index.html in a browser, or use the VS Code "Live Server" extension for auto-reload.
-
-Editing
-Content: edit text directly in index.html.
-Colors/fonts: change the CSS variables at the top of assets/css/styles.css.
-Photo/résumés: replace the files in assets/images/ and assets/resume/, keeping the same filenames.
-Deploying
-
-Drag the folder into Netlify Drop, or push to GitHub and enable GitHub Pages — no build step needed.
