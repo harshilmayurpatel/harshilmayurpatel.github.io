@@ -80,11 +80,28 @@
   }
 
   // Resolves to { place, isHome, wx } or { error }
-  function loadWeather(onAsking) {
-    var cached = readCache();
+  /* Location is opt-in: we only call geolocation when the visitor clicked
+     "Use my location" (remembered) or already granted it before — so a
+     first-time click on ✨ never pops a browser permission prompt. */
+  var LOC_KEY = "wxUseLoc";
+  function locOptIn() { try { return localStorage.getItem(LOC_KEY) === "1"; } catch (e) { return false; } }
+  function geoAllowed() {
+    if (!navigator.geolocation) return Promise.resolve(false);
+    if (locOptIn()) return Promise.resolve(true);
+    if (!navigator.permissions || !navigator.permissions.query) return Promise.resolve(false);
+    return navigator.permissions.query({ name: "geolocation" })
+      .then(function (s) { return s.state === "granted"; })
+      .catch(function () { return false; });
+  }
+
+  function loadWeather(onAsking, forceGeo) {
+    var cached = forceGeo ? null : readCache();
     if (cached) return Promise.resolve(cached);
-    if (onAsking) onAsking();
-    return getPosition().then(function (pos) {
+    return (forceGeo ? Promise.resolve(true) : geoAllowed()).then(function (useGeo) {
+      if (!useGeo) return null;
+      if (onAsking) onAsking();
+      return getPosition();
+    }).then(function (pos) {
       var isHome = !pos;
       var p = pos || HOME;
       return Promise.all([weather(p.lat, p.lon), isHome ? Promise.resolve(HOME.city) : cityName(p.lat, p.lon)])
@@ -266,10 +283,16 @@
     var wishEl = wrap.querySelector(".cc-wish");
     wishEl.textContent = "Have a lovely " + (g.part === "night" ? "night" : g.part) + " 🙂";
 
-    loadWeather(function () {
-      var t = wrap.querySelector(".cc-load-text");
-      if (t) t.textContent = "Allow location for your local weather…";
-    }).then(function (res) {
+    var ambientShown = false;
+    function fetchAndRender(forceGeo) {
+      return loadWeather(function () {
+        var t = wrap.querySelector(".cc-load-text");
+        if (t) t.textContent = "Allow location for your local weather…";
+      }, forceGeo).then(render);
+    }
+    fetchAndRender(false);
+
+    function render(res) {
       if (cardEl !== wrap) return; // closed meanwhile
       loading = false;
       remaining = AUTO_MS; // full reading time from the moment the weather appears
@@ -296,12 +319,27 @@
           "<span><em>H / L</em>" + Math.round(d.temperature_2m_max[0]) + "°/" + Math.round(d.temperature_2m_min[0]) + "°</span>" +
           "<span><em>Rain</em>" + (d.precipitation_probability_max[0] == null ? "–" : d.precipitation_probability_max[0] + "%") + "</span>" +
           "<span><em>Wind</em>" + Math.round(c.wind_speed_10m) + "<small>" + UNIT_W + "</small></span>" +
-        "</div>";
+        "</div>" +
+        (res.isHome && navigator.geolocation
+          ? '<button type="button" class="cc-loc">' +
+              '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-6.5-6.2-6.5-11a6.5 6.5 0 0 1 13 0c0 4.8-6.5 11-6.5 11z" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="10" r="2.2" fill="currentColor"/></svg>' +
+              "Use my location</button>"
+          : "");
       wishEl.textContent = wish(desc.kind, T, g.part);
-      // Weather-themed particles across the screen
-      if (opts.ambient !== false) ambient(desc.kind);
+
+      var locBtn = box.querySelector(".cc-loc");
+      if (locBtn) locBtn.addEventListener("click", function () {
+        try { localStorage.setItem(LOC_KEY, "1"); } catch (e) {}
+        locBtn.disabled = true;
+        locBtn.lastChild.textContent = "Locating…";
+        loading = true; // hold the auto-close while the browser asks
+        fetchAndRender(true);
+      });
+
+      // Weather-themed particles across the screen (once per card)
+      if (!ambientShown && opts.ambient !== false) { ambientShown = true; ambient(desc.kind); }
       if (opts.onWeather) opts.onWeather(desc);
-    });
+    }
   }
 
   /* ---------- Fireworks ---------- */

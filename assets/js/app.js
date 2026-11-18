@@ -504,6 +504,8 @@
   function haptic(kind) {
     var pattern = HAPTIC[kind] || HAPTIC.tap;
     if (navigator.vibrate) {
+      // Skip until the first tap: Chrome blocks (and logs) vibration before that
+      if (navigator.userActivation && !navigator.userActivation.hasBeenActive) return;
       try { navigator.vibrate(pattern); } catch (e) {}
       return;
     }

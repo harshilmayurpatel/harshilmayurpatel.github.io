@@ -7,7 +7,8 @@ Structure
 ├── assets/
 │   ├── css/styles.css
 │   ├── js/app.js
-│   ├── images/headshot-sticker.png
+│   ├── images/headshot-sticker.webp (+ .png source)
+│   ├── icons/         favicon, apple-touch icon, link-preview image
 │   └── resume/
 │       └── Harshil_Patel_Resume.pdf
 
