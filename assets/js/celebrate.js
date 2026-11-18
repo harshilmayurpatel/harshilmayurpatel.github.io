@@ -248,7 +248,6 @@
         "</div>" +
         '<p class="cc-wish"></p>' +
         (harshilLine ? '<div class="cc-foot">' + harshilLine + "</div>" : "") +
-        '<p class="cc-src">Weather by Open-Meteo</p>' +
         '<div class="cc-timer" aria-hidden="true"><i></i></div>' +
       "</section>";
     document.body.appendChild(wrap);
@@ -260,7 +259,6 @@
     card.addEventListener("mouseleave", function () { paused = false; });
     document.addEventListener("keydown", onKey);
     requestAnimationFrame(function () { wrap.classList.add("show"); });
-    setTimeout(function () { var b = wrap.querySelector(".cc-close"); if (b) b.focus({ preventScroll: true }); }, 400);
 
     remaining = AUTO_MS; lastTick = performance.now(); paused = false; loading = true;
     rafId = requestAnimationFrame(tickAuto);
@@ -300,10 +298,6 @@
           "<span><em>Wind</em>" + Math.round(c.wind_speed_10m) + "<small>" + UNIT_W + "</small></span>" +
         "</div>";
       wishEl.textContent = wish(desc.kind, T, g.part);
-      if (res.isHome) {
-        var src = wrap.querySelector(".cc-src");
-        if (src) src.textContent = "Location off · showing Jersey City, where Harshil is · Open-Meteo";
-      }
       // Weather-themed particles across the screen
       if (opts.ambient !== false) ambient(desc.kind);
       if (opts.onWeather) opts.onWeather(desc);

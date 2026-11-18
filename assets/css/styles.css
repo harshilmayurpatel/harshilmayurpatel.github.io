@@ -1335,6 +1335,26 @@ main{ padding-left: var(--rail-w); }
 .mic-btn.listening .mic-capsule{ animation: capsuleBreathe 1s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
 @keyframes capsuleBreathe{ 50%{ transform: scaleY(.82); } }
 
+/* Click ripple: spreads from the click point inside the tile.
+   White over the red "on" state, accent blue when switching off. */
+.mic-ripple{
+  position: absolute;
+  width: 12px; height: 12px;
+  margin: -6px 0 0 -6px;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 0;
+  animation: micRipple .6s cubic-bezier(.2,.7,.3,1) forwards;
+}
+.mic-ripple.on{ background: rgba(255,255,255,.55); }
+.mic-ripple.off{ background: var(--accent); opacity: .35; }
+@keyframes micRipple{
+  from{ transform: scale(0); opacity: .7; }
+  to  { transform: scale(9); opacity: 0; }
+}
+/* Smooth color change between idle and listening */
+.mic-btn{ transition: border-color .2s ease, background-color .22s ease, color .22s ease, box-shadow .25s ease; }
+
 /* One rotating suggestion, to the left of the mic */
 .mic-tip{
   position: absolute;

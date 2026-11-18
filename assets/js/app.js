@@ -807,14 +807,27 @@
       return false;
     }
 
+    // Stop right away (second click, Esc): abort, not stop, so the browser
+    // drops the session instantly instead of finishing it. The session is
+    // retired first, so its late abort/end events can't touch the UI or
+    // the next session.
+    function stopListening() {
+      var r = rec;
+      rec = null;
+      setListening(false);
+      haptic("toggle");
+      if (r) { try { r.abort(); } catch (e) {} }
+    }
+
     function startListening() {
-      if (listening) { rec && rec.stop(); return; }
+      if (listening) { stopListening(); return; }
       stopTips();
-      rec = new SR();
-      rec.lang = "en-US";
-      rec.interimResults = true;
-      rec.maxAlternatives = 3;
-      rec.continuous = false;
+      var session = new SR();
+      rec = session;
+      session.lang = "en-US";
+      session.interimResults = true;
+      session.maxAlternatives = 3;
+      session.continuous = false;
       handled = false;
 
       var hint = suggestions()[0];
@@ -823,9 +836,13 @@
       islandSetSticky({ icon: "mic", tone: "live", listening: true,
         html: "Listening<small>“" + hint + "”</small>" });
 
-      rec.onspeechstart = function () { islandEl.classList.add("hearing"); };
-      rec.onspeechend = function () { islandEl.classList.remove("hearing"); };
-      rec.onresult = function (e) {
+      // Every handler ignores events from a session that's been stopped or replaced
+      function live() { return rec === session; }
+
+      session.onspeechstart = function () { if (live()) islandEl.classList.add("hearing"); };
+      session.onspeechend = function () { if (live()) islandEl.classList.remove("hearing"); };
+      session.onresult = function (e) {
+        if (!live()) return;
         var res = e.results[e.results.length - 1];
         var text = res[0].transcript;
         if (!res.isFinal) {
@@ -837,15 +854,18 @@
         var ok = false;
         for (var a = 0; a < res.length && !ok; a++) ok = handle(res[a].transcript);
         handled = true;
+        rec = null;
         setListening(false);
         if (!ok) {
           haptic("error");
           notify({ icon: "alert", tone: "warn", html: "Didn't catch that<small>say “help”</small>", dur: 2600 }, { replace: true });
         }
       };
-      rec.onerror = function (e) {
-        setListening(false);
+      session.onerror = function (e) {
+        if (!live()) return;
         handled = true;
+        rec = null;
+        setListening(false);
         var msg = e.error === "not-allowed" || e.error === "service-not-allowed"
           ? "Mic blocked<small>allow it in site settings</small>"
           : e.error === "no-speech" ? "Didn't hear anything"
@@ -854,23 +874,42 @@
           : "Voice isn't available";
         if (msg) { haptic("error"); notify({ icon: "alert", tone: "warn", html: msg, dur: 2600 }, { replace: true }); }
       };
-      rec.onend = function () {
-        if (listening) setListening(false);
+      session.onend = function () {
+        if (!live()) return;
+        rec = null;
+        setListening(false);
         if (!handled) notify({ icon: "alert", tone: "warn", html: "Didn't hear anything", dur: 2400 }, { replace: true });
       };
 
-      try { rec.start(); } catch (err) { setListening(false); }
+      try { session.start(); } catch (err) { rec = null; setListening(false); }
     }
 
-    micBtn.addEventListener("click", startListening);
+    micBtn.addEventListener("click", function (e) {
+      micRipple(e, !listening); // ripple color shows the state it's switching to
+      startListening();
+    });
+
+    // Small ripple from the click point (center for keyboard/V)
+    function micRipple(e, turningOn) {
+      if (reduceMotion) return;
+      var r = micBtn.getBoundingClientRect();
+      var x = e && e.clientX ? e.clientX - r.left : r.width / 2;
+      var y = e && e.clientY ? e.clientY - r.top : r.height / 2;
+      var s = document.createElement("span");
+      s.className = "mic-ripple" + (turningOn ? " on" : " off");
+      s.style.left = x + "px";
+      s.style.top = y + "px";
+      micBtn.appendChild(s);
+      setTimeout(function () { s.remove(); }, 650);
+    }
 
     // Surprise #1: press V anywhere (outside text fields) to talk, Esc to stop
     document.addEventListener("keydown", function (e) {
       var tag = (e.target.tagName || "").toLowerCase();
       if (tag === "input" || tag === "textarea" || e.target.isContentEditable) return;
-      if (e.metaKey || e.ctrlKey || e.altKey) return;
-      if (e.key === "v" || e.key === "V") { e.preventDefault(); startListening(); }
-      if (e.key === "Escape" && listening && rec) rec.abort();
+      if (e.metaKey || e.ctrlKey || e.altKey || e.repeat) return; // holding V mustn't flicker it
+      if (e.key === "v" || e.key === "V") { e.preventDefault(); micRipple(null, !listening); startListening(); }
+      if (e.key === "Escape" && listening) { micRipple(null, false); stopListening(); }
     });
   }
 
