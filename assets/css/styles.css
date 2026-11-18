@@ -98,23 +98,37 @@ ul{ margin:0; padding:0; list-style:none; }
   gap: 46px;
   z-index: 40;
 }
+/* Track (unfilled) — top/height are set by JS from the real ball centers */
 .rail-line{
   position: absolute;
-  top: 12%; bottom: 12%;
+  top: 0; height: 0;
   left: 50%;
-  width: 2px;
+  width: 4px;
   transform: translateX(-50%);
-  background: var(--line-strong);
+  border-radius: 4px;
+  background: var(--line);
 }
+/* Filled line — thick ink with a blue core and soft glow */
 .rail-progress{
   position: absolute;
-  top: 12%;
+  top: 0; height: 0;
   left: 50%;
-  width: 2px;
+  width: 4px;
   transform: translateX(-50%);
+  border-radius: 4px;
+  background: linear-gradient(180deg, var(--ink) 0%, var(--accent-ink) 100%);
+  box-shadow: 0 0 10px rgba(59,79,160,0.35);
+}
+/* Glowing head at the tip of the filled line */
+.rail-progress::after{
+  content: '';
+  position: absolute;
+  left: 50%; bottom: -5px;
+  width: 10px; height: 10px;
+  transform: translateX(-50%);
+  border-radius: 50%;
   background: var(--accent);
-  height: 0%;
-  transition: height .2s ease-out;
+  box-shadow: 0 0 0 4px rgba(59,79,160,0.18), 0 0 14px rgba(59,79,160,0.6);
 }
 .rail-node{
   position: relative;
@@ -125,21 +139,50 @@ ul{ margin:0; padding:0; list-style:none; }
   z-index: 1;
 }
 .rail-num{
-  width: 30px; height: 30px;
+  position: relative;
+  width: 34px; height: 34px;
   display: flex; align-items: center; justify-content: center;
   border-radius: 50%;
   background: var(--surface);
-  border: 2px solid var(--line-strong);
   font-family: var(--font-mono);
   font-size: 10px;
+  font-weight: 500;
   color: var(--muted);
-  transition: all .2s ease;
+  box-shadow: 0 2px 6px rgba(26,30,43,0.08);
+  transition: background .3s ease, color .3s ease, box-shadow .3s ease, transform .3s ease;
 }
+/* Ring drawn around the ball as you scroll through that stage */
+.rail-ring{
+  position: absolute;
+  inset: -3px;
+  width: calc(100% + 6px); height: calc(100% + 6px);
+  transform: rotate(-90deg); /* start drawing from the top */
+  pointer-events: none;
+  overflow: visible;
+}
+.rail-ring circle{ fill: none; stroke-width: 3; }
+.ring-track{ stroke: var(--line-strong); }
+.ring-fill{
+  stroke: var(--accent);
+  stroke-linecap: round;
+  stroke-dasharray: 100;
+  stroke-dashoffset: 100;
+  filter: drop-shadow(0 0 2px rgba(59,79,160,0.55));
+}
+/* Current stage: lifted, blue glow, ink number */
 .rail-node.active .rail-num{
-  border-color: var(--accent);
-  color: var(--accent);
-  background: var(--accent-tint);
+  color: var(--ink);
+  transform: scale(1.12);
+  box-shadow: 0 0 0 6px var(--accent-tint), 0 4px 14px rgba(59,79,160,0.25);
 }
+/* Completed stages: solid ink ball, white number, full blue ring */
+.rail-node.done .rail-num,
+.rail-node.complete .rail-num{
+  background: var(--ink);
+  color: #fff;
+}
+.rail-node.done .ring-fill,
+.rail-node.complete .ring-fill{ stroke: var(--accent-light); }
 .rail-label{
   font-family: var(--font-mono);
   font-size: 9px;
