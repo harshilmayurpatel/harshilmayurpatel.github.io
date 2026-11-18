@@ -376,10 +376,8 @@ main{ padding-left: var(--rail-w); }
 .photo-frame::before{
   content: '';
   position: absolute;
-  top: -16px;
-  right: -16px;
-  width: 100%;
-  height: 100%;
+  /* Sit exactly behind the photo so it's centered in the box */
+  inset: 0;
   background: var(--sky);
   border: 1.5px solid var(--accent);
   border-radius: 26px;
@@ -398,15 +396,13 @@ main{ padding-left: var(--rail-w); }
   box-shadow: 0 26px 54px rgba(26,30,43,0.16);
   transition: transform .45s cubic-bezier(.2,.7,.2,1), box-shadow .45s ease;
 }
-.photo-frame::before{ transition: transform .45s cubic-bezier(.2,.7,.2,1); }
 
-/* Hover: photo eases back (zooms out) slightly, frame shifts out a touch */
+/* Hover: photo eases back (zooms out) slightly inside the box */
 @media (hover: hover){
   .photo-frame:hover img{
     transform: scale(.95);
     box-shadow: 0 16px 36px rgba(26,30,43,0.14);
   }
-  .photo-frame:hover::before{ transform: translate(4px, -4px); }
 }
 
 .hero-status{ display: flex; flex-direction: column; gap: 14px; }
