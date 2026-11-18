@@ -381,6 +381,7 @@ main{ padding-left: var(--rail-w); }
   background: var(--sky);
   border: 1.5px solid var(--accent);
   border-radius: 26px;
+  box-shadow: 0 26px 54px rgba(26,30,43,0.16);
   z-index: 0;
 }
 .photo-frame img{
@@ -393,15 +394,22 @@ main{ padding-left: var(--rail-w); }
   /* Portrait photo in a square frame: keep the head, crop from the bottom */
   object-position: center top;
   border-radius: 26px;
-  box-shadow: 0 26px 54px rgba(26,30,43,0.16);
-  transition: transform .45s cubic-bezier(.2,.7,.2,1), box-shadow .45s ease;
+  /* Grow from the bottom edge so the head rises out of the box */
+  transform-origin: 50% 100%;
+  clip-path: inset(0 0 0 0 round 26px);
+  transition:
+    transform .5s cubic-bezier(.2,.8,.2,1.2),
+    clip-path .5s cubic-bezier(.2,.8,.2,1.2),
+    filter .5s ease;
 }
 
-/* Hover: photo eases back (zooms out) slightly inside the box */
+/* Hover: pop-out — the photo grows up and out of the top of the box.
+   Sides are clipped by 1/scale so the jacket stays inside the box edges. */
 @media (hover: hover){
   .photo-frame:hover img{
-    transform: scale(.95);
-    box-shadow: 0 16px 36px rgba(26,30,43,0.14);
+    transform: scale(1.1);
+    clip-path: inset(-20% 4.55% 0 4.55% round 0 0 23.6px 23.6px);
+    filter: drop-shadow(0 14px 18px rgba(26,30,43,0.28));
   }
 }
 
