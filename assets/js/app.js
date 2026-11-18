@@ -496,7 +496,11 @@
      from a user's own tap.
      ========================================================= */
   var hapticInput = document.querySelector(".haptic-switch input");
-  var HAPTIC = { tap: [8], toggle: [14], success: [10, 60, 14], error: [30, 50, 30] };
+  // Android motors need ~20ms+ to be felt at all; very short pulses are silently lost
+  var HAPTIC = {
+    tap: [22], toggle: [32], success: [26, 70, 38], error: [55, 60, 55],
+    celebrate: [30, 60, 30, 60, 70]
+  };
   function haptic(kind) {
     var pattern = HAPTIC[kind] || HAPTIC.tap;
     if (navigator.vibrate) {
@@ -511,10 +515,12 @@
       }
     }
   }
-  // A light tick on any link or button tap on touch screens
-  document.addEventListener("pointerdown", function (e) {
+  // A light tick on any link or button tap on touch screens. Fired on
+  // pointerup: Chrome only counts the finger lifting as a real tap ("user
+  // activation"), and blocks vibration before that.
+  document.addEventListener("pointerup", function (e) {
     if (e.pointerType !== "touch") return;
-    var el = e.target.closest("a, button");
+    var el = e.target.closest("a, button, .chip");
     if (el && !el.hasAttribute("data-haptic-own")) haptic("tap");
   }, { passive: true });
 
@@ -880,17 +886,23 @@
     surprising = true;
     setTimeout(function () { surprising = false; }, 3600);
 
-    var hour = new Date().getHours();
-    var greet = hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening";
-    notify({ icon: "spark", tone: "info", html: "👋 " + greet + "<small>thanks for stopping by</small>", dur: 3400 });
-    islandEl.setAttribute("data-anim", "spin");
-    setTimeout(function () { islandEl.removeAttribute("data-anim"); }, 1300);
-    haptic("success");
-    setTimeout(function () { haptic("success"); }, 420);
+    haptic("celebrate");
+
+    // The big card: greeting, thank-you, local weather and forecast
+    if (window.Celebrate) {
+      // Let the confetti open the show, then bring the card in
+      setTimeout(function () { window.Celebrate.open(); }, reduceMotion ? 0 : 450);
+    } else {
+      var hour = new Date().getHours();
+      var greet = hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening";
+      notify({ icon: "spark", tone: "info", html: "👋 " + greet + "<small>thanks for stopping by</small>", dur: 3400 });
+    }
     if (reduceMotion) return;
 
     // Confetti: two cannons + a top burst (+ a burst from the button, if pressed)
     confetti(originEl);
+    // Fireworks over the top half, a beat after the confetti
+    if (window.Celebrate) setTimeout(function () { window.Celebrate.fireworks(4); }, 700);
 
     // Everything on screen joins in, sweeping top → bottom
     celebrateVisible();

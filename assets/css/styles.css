@@ -1461,6 +1461,167 @@ main{ padding-left: var(--rail-w); }
   to  { transform: translate(var(--dx), var(--dy)) scale(0) rotate(180deg); opacity: 0; }
 }
 
+/* =========================================================
+   Celebration card (greeting + weather)
+   ========================================================= */
+.cc-wrap{ position: fixed; inset: 0; z-index: 112; display: grid; place-items: center; padding: 16px; pointer-events: none; }
+.cc-backdrop{
+  position: absolute; inset: 0;
+  background: rgba(14,17,25,.18);
+  backdrop-filter: blur(2px);
+  opacity: 0; transition: opacity .35s ease;
+  pointer-events: auto;
+}
+:root[data-theme="dark"] .cc-backdrop{ background: rgba(0,0,0,.35); }
+.cc-card{
+  position: relative;
+  width: min(440px, 100%);
+  padding: 24px 24px 20px;
+  border-radius: 24px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  color: var(--ink);
+  box-shadow: 0 30px 80px rgba(26,30,43,.22), 0 4px 14px rgba(26,30,43,.08);
+  overflow: hidden;
+  pointer-events: auto;
+  opacity: 0;
+  transform: translateY(18px) scale(.94);
+  filter: blur(4px);
+  transition: opacity .35s ease, transform .55s cubic-bezier(.3,1.35,.45,1), filter .35s ease;
+}
+:root[data-theme="dark"] .cc-card{ box-shadow: 0 30px 80px rgba(0,0,0,.55); }
+.cc-wrap.show .cc-backdrop{ opacity: 1; }
+.cc-wrap.show .cc-card{ opacity: 1; transform: none; filter: none; }
+.cc-wrap.hide .cc-card{ opacity: 0; transform: translateY(-10px) scale(.96); transition-duration: .3s; }
+.cc-wrap.hide .cc-backdrop{ opacity: 0; }
+/* Soft accent glow in the corner */
+.cc-card::before{
+  content: ""; position: absolute; top: -80px; right: -80px;
+  width: 220px; height: 220px; border-radius: 50%;
+  background: radial-gradient(circle, var(--accent-tint) 0%, transparent 70%);
+  pointer-events: none;
+}
+.cc-close{
+  position: absolute; top: 12px; right: 12px; z-index: 2;
+  width: 30px; height: 30px; border-radius: 9px;
+  display: inline-flex; align-items: center; justify-content: center;
+  border: 1px solid var(--line); background: var(--surface); color: var(--muted);
+  cursor: pointer; transition: color .2s ease, border-color .2s ease;
+}
+.cc-close:hover{ color: var(--ink); border-color: var(--accent); }
+.cc-close svg{ width: 14px; height: 14px; }
+
+.cc-head{ position: relative; display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+.cc-hi{ font-family: var(--font-mono); font-size: 12.5px; color: var(--accent); letter-spacing: .02em; }
+.cc-wave{ display: inline-block; transform-origin: 70% 70%; animation: ccWave 1.6s ease-in-out .5s 2; }
+@keyframes ccWave{ 0%,60%,100%{ transform: rotate(0); } 10%,30%{ transform: rotate(16deg); } 20%,40%{ transform: rotate(-10deg); } }
+.cc-title{ margin-top: 4px; font-size: 1.6rem; font-weight: 700; letter-spacing: -.02em; line-height: 1.15; }
+.cc-when{ margin-top: 6px; font-size: 13px; color: var(--muted); }
+.cc-icon{ flex: 0 0 auto; margin: -6px 28px 0 0; }
+
+.cc-weather{ position: relative; margin-top: 16px; min-height: 64px; }
+.cc-loading{ display: flex; align-items: center; gap: 10px; color: var(--muted); font-size: 13px; padding: 18px 0; }
+.cc-dots{ display: inline-flex; gap: 4px; }
+.cc-dots i{ width: 6px; height: 6px; border-radius: 50%; background: var(--accent); animation: ccDot 1s ease-in-out infinite; }
+.cc-dots i:nth-child(2){ animation-delay: .15s; } .cc-dots i:nth-child(3){ animation-delay: .3s; }
+@keyframes ccDot{ 50%{ transform: translateY(-5px); opacity: .5; } }
+.cc-noweather{ color: var(--muted); font-size: 14px; padding: 10px 0; }
+
+.cc-now{ display: flex; align-items: center; gap: 14px; animation: ccIn .5s ease both; }
+.cc-temp{ font-family: var(--font-display); font-size: 3rem; font-weight: 600; line-height: 1; letter-spacing: -.03em; }
+.cc-temp sup{ font-size: 1.1rem; font-weight: 500; vertical-align: top; margin-left: 2px; color: var(--muted); }
+.cc-cond b{ display: block; font-size: 1rem; font-weight: 600; }
+.cc-cond span{ font-size: 13px; color: var(--muted); }
+
+.cc-stats{
+  margin-top: 14px;
+  display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 8px;
+  animation: ccIn .5s ease .08s both;
+}
+.cc-stats span{
+  padding: 8px 10px; border-radius: 10px;
+  background: var(--sky-tint); border: 1px solid var(--line);
+  font-family: var(--font-mono); font-size: 12.5px; color: var(--ink);
+}
+.cc-stats em{ display: block; font-style: normal; font-size: 10.5px; color: var(--muted-2); text-transform: uppercase; letter-spacing: .05em; margin-bottom: 2px; }
+
+.cc-forecast{ margin-top: 12px; display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 8px; animation: ccIn .5s ease .16s both; }
+.cc-day{
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
+  padding: 8px 6px; border-radius: 12px; border: 1px solid var(--line);
+  font-size: 12px;
+}
+.cc-dname{ font-family: var(--font-mono); font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; }
+.cc-dtemp{ font-family: var(--font-mono); color: var(--muted); }
+.cc-dtemp b{ color: var(--ink); font-weight: 600; }
+.cc-dpop{ font-size: 10.5px; color: var(--accent); min-height: 14px; }
+@keyframes ccIn{ from{ opacity: 0; transform: translateY(8px); } }
+
+.cc-wish{ margin-top: 16px; font-size: 15px; font-weight: 500; }
+.cc-foot{ margin-top: 12px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; }
+.cc-chip{ font-size: 12px; padding: 4px 10px; border-radius: 999px; background: var(--accent-tint); color: var(--accent-ink); }
+.cc-src{ font-size: 11px; color: var(--muted-2); margin-left: auto; }
+.cc-timer{ position: absolute; left: 0; right: 0; bottom: 0; height: 3px; background: var(--line); }
+.cc-timer i{ display: block; height: 100%; background: var(--accent); transform-origin: left; }
+
+@media (max-width: 420px){
+  .cc-card{ padding: 20px 18px 18px; border-radius: 20px; }
+  .cc-title{ font-size: 1.35rem; }
+  .cc-temp{ font-size: 2.5rem; }
+  .cc-stats{ grid-template-columns: repeat(2, minmax(0,1fr)); }
+  .cc-icon{ margin-right: 30px; }
+}
+
+/* ---------- Animated weather icons ---------- */
+.wi{ display: block; overflow: visible; }
+.wi-lg{ width: 84px; height: 84px; }
+.wi-sm{ width: 34px; height: 34px; margin: 2px 0; }
+.wi line, .wi path{ stroke-linecap: round; stroke-linejoin: round; }
+.wi-rays line{ stroke: #F2B33D; stroke-width: 3.4; }
+.wi-core{ fill: #F7C04A; }
+.wi-rays{ transform-origin: 32px 32px; animation: wiSpin 14s linear infinite; }
+.wi-core{ transform-box: fill-box; transform-origin: center; animation: wiPulse 3s ease-in-out infinite; }
+@keyframes wiSpin{ to{ transform: rotate(360deg); } }
+@keyframes wiPulse{ 50%{ transform: scale(1.08); } }
+.wi-moon{ fill: #C9D2F2; }
+:root[data-theme="dark"] .wi-moon{ fill: #E3E8FF; }
+.wi-moonwrap{ animation: wiFloat 4s ease-in-out infinite; }
+.wi-star{ fill: #F2C45A; animation: wiTwinkle 2s ease-in-out infinite; }
+.wi-star.s2{ animation-delay: .6s; } .wi-star.s3{ animation-delay: 1.2s; }
+@keyframes wiTwinkle{ 50%{ opacity: .25; } }
+@keyframes wiFloat{ 50%{ transform: translateY(-2px); } }
+.wi-cloud path{ fill: #DCE3F0; stroke: #C3CDE0; stroke-width: 1.5; }
+.wi-cloud.c2 path{ fill: #EEF2F9; }
+:root[data-theme="dark"] .wi-cloud path{ fill: #4A5574; stroke: #5D6888; }
+:root[data-theme="dark"] .wi-cloud.c2 path{ fill: #5D6888; }
+.wi-cloud{ animation: wiDrift 5s ease-in-out infinite; }
+.wi-cloud.c2{ animation-duration: 6.5s; animation-direction: reverse; }
+@keyframes wiDrift{ 50%{ translate: 3px 0; } }
+.wi-drop{ stroke: #5B8DEF; stroke-width: 2.6; animation: wiRain 1s linear var(--d, 0s) infinite; }
+.wi-drop.thin{ stroke-width: 1.8; animation-duration: 1.3s; }
+@keyframes wiRain{
+  0%  { transform: translateY(-4px); opacity: 0; }
+  30% { opacity: 1; }
+  100%{ transform: translateY(8px); opacity: 0; }
+}
+.wi-flake path{ stroke: #9FB4E8; stroke-width: 1.8; fill: none; }
+:root[data-theme="dark"] .wi-flake path{ stroke: #E3E8FF; }
+.wi-flake{ transform-box: fill-box; transform-origin: center; animation: wiSnow 2.4s linear var(--d, 0s) infinite; }
+@keyframes wiSnow{
+  0%  { transform: translateY(-4px) rotate(0); opacity: 0; }
+  25% { opacity: 1; }
+  100%{ transform: translateY(9px) rotate(120deg); opacity: 0; }
+}
+.wi-bolt{ fill: #F5C542; animation: wiBolt 2.2s ease-in-out infinite; }
+@keyframes wiBolt{ 0%,40%,48%,100%{ opacity: 1; } 44%{ opacity: .15; } 70%{ opacity: .5; } }
+.wi-fog line{ stroke: #AAB4CA; stroke-width: 3; animation: wiFog 3s ease-in-out infinite; }
+.wi-fog line:nth-child(2){ animation-delay: .8s; }
+@keyframes wiFog{ 50%{ transform: translateX(5px); opacity: .6; } }
+.wi-wind path{ fill: none; stroke: #8FA2D6; stroke-width: 3; stroke-dasharray: 60; animation: wiWind 2.4s ease-in-out infinite; }
+.wi-wind .w2{ animation-delay: .3s; } .wi-wind .w3{ animation-delay: .6s; }
+@keyframes wiWind{ 0%{ stroke-dashoffset: 60; } 50%{ stroke-dashoffset: 0; } 100%{ stroke-dashoffset: -60; } }
+.wi-loading{ animation: wiPulse 1.2s ease-in-out infinite; opacity: .6; }
+
 /* Hidden native switch used only to trigger iPhone haptics */
 .haptic-switch{
   position: fixed;
