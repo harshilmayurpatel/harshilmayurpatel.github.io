@@ -870,47 +870,150 @@
     }, 2600);
   })();
 
-  /* ---------- Surprise #2: "surprise me" — greeting + confetti in theme colors ---------- */
+  /* ---------- Surprise #2: "surprise me" — a ~3.5s celebration across the page ----------
+     greeting (spinning icon) → confetti cannons from both bottom corners + a burst
+     from the top → name letters wave → photo jumps out of its frame → rail balls
+     pulse in sequence → mic hops → sparkle trail follows the cursor/finger */
+  var surprising = false;
   function surprise() {
+    if (surprising) return;
+    surprising = true;
+    setTimeout(function () { surprising = false; }, 3600);
+
     var hour = new Date().getHours();
     var greet = hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening";
-    notify({ icon: "spark", tone: "info", html: greet + "<small>thanks for stopping by</small>", dur: 3200 }, { replace: true });
+    notify({ icon: "spark", tone: "info", html: "👋 " + greet + "<small>thanks for stopping by</small>", dur: 3400 });
+    islandEl.setAttribute("data-anim", "spin");
+    setTimeout(function () { islandEl.removeAttribute("data-anim"); }, 1300);
+    haptic("success");
+    setTimeout(function () { haptic("success"); }, 420);
     if (reduceMotion) return;
+
+    // Confetti: two cannons + a top burst, theme colors, four shapes
+    confetti();
+
+    // Name: letters wave (split once, keep the real name for screen readers)
+    var title = document.querySelector(".hero-title");
+    if (title) {
+      if (!title.querySelector(".ch")) {
+        var name = title.textContent;
+        title.setAttribute("aria-label", name);
+        title.textContent = "";
+        name.split("").forEach(function (ch, i) {
+          var s = document.createElement("span");
+          s.className = "ch";
+          s.setAttribute("aria-hidden", "true");
+          s.style.setProperty("--i", i);
+          s.textContent = ch;
+          title.appendChild(s);
+        });
+      }
+      restartClass(title, "wave", 1400);
+    }
+
+    // Photo: jumps out of its frame
+    var photo = document.querySelector(".photo-frame img");
+    if (photo) setTimeout(function () { restartClass(photo, "cheer", 1500); }, 150);
+
+    // Rail: balls pulse one after another
+    Array.prototype.forEach.call(document.querySelectorAll(".rail-num"), function (n, i) {
+      setTimeout(function () { restartClass(n, "pulse", 750); }, 250 + i * 130);
+    });
+
+    // Mic: a happy hop
+    if (micBtn) setTimeout(function () { restartClass(micBtn, "cheer", 950); }, 300);
+
+    // Sparkle trail for 4 seconds
+    sparkleTrail(4000);
+  }
+
+  function restartClass(el, cls, ms) {
+    el.classList.remove(cls);
+    void el.offsetWidth;
+    el.classList.add(cls);
+    setTimeout(function () { el.classList.remove(cls); }, ms);
+  }
+
+  function confetti() {
     var c = document.createElement("canvas");
     c.setAttribute("aria-hidden", "true");
     c.style.cssText = "position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:110";
     document.body.appendChild(c);
+    var W = innerWidth, H = innerHeight;
     var dpr = Math.min(window.devicePixelRatio || 1, 2);
-    c.width = innerWidth * dpr; c.height = innerHeight * dpr;
+    c.width = W * dpr; c.height = H * dpr;
     var ctx = c.getContext("2d");
     ctx.scale(dpr, dpr);
-    var colors = isDark() ? ["#8B9CF0", "#B7C2F7", "#E8EAF2", "#5E6FD0"] : ["#3B4FA0", "#93A2E8", "#262F73", "#D7E6F7"];
+    var colors = isDark()
+      ? ["#8B9CF0", "#B7C2F7", "#E8EAF2", "#5E6FD0", "#8FD6A8"]
+      : ["#3B4FA0", "#93A2E8", "#262F73", "#B7C2F7", "#1A1E2B"];
     var parts = [];
-    for (var i = 0; i < 110; i++) {
-      parts.push({
-        x: innerWidth / 2 + (Math.random() - 0.5) * 120, y: 30,
-        vx: (Math.random() - 0.5) * 11, vy: Math.random() * 5 + 2,
-        r: Math.random() * 5 + 3, rot: Math.random() * 6, vr: (Math.random() - 0.5) * 0.3,
-        col: colors[i % colors.length], shape: i % 3
-      });
+    function add(n, x, y, vx0, vx1, vy0, vy1, delay) {
+      for (var i = 0; i < n; i++) {
+        parts.push({
+          x: x + (Math.random() - 0.5) * 30, y: y,
+          vx: vx0 + Math.random() * (vx1 - vx0), vy: vy0 + Math.random() * (vy1 - vy0),
+          r: Math.random() * 5 + 3, rot: Math.random() * 6, vr: (Math.random() - 0.5) * 0.35,
+          col: colors[(Math.random() * colors.length) | 0], shape: (Math.random() * 4) | 0,
+          wob: Math.random() * 6, delay: delay || 0
+        });
+      }
     }
-    var t0 = performance.now();
+    var scale = Math.min(1, W / 900);
+    add(70, 0, H, 4 * scale + 3, 11 * scale + 4, -21, -13, 0);   // bottom-left cannon
+    add(70, W, H, -11 * scale - 4, -4 * scale - 3, -21, -13, 0); // bottom-right cannon
+    add(60, W / 2, -10, -7, 7, 1, 6, 350);                     // top burst, a beat later
+
+    function star(r) {
+      ctx.beginPath();
+      for (var k = 0; k < 10; k++) {
+        var a = (Math.PI / 5) * k - Math.PI / 2, rr = k % 2 ? r * 0.45 : r;
+        ctx.lineTo(Math.cos(a) * rr, Math.sin(a) * rr);
+      }
+      ctx.closePath(); ctx.fill();
+    }
+    var LIFE = 3300, t0 = performance.now();
     (function draw(now) {
       var t = now - t0;
-      ctx.clearRect(0, 0, innerWidth, innerHeight);
+      ctx.clearRect(0, 0, W, H);
       parts.forEach(function (p) {
-        p.vy += 0.18; p.vx *= 0.99; p.x += p.vx; p.y += p.vy; p.rot += p.vr;
+        if (t < p.delay) return;
+        p.vy += 0.32; p.vx *= 0.985; p.vy *= 0.992;
+        p.x += p.vx + Math.sin((t / 180) + p.wob) * 0.6; p.y += p.vy; p.rot += p.vr;
         ctx.save();
-        ctx.globalAlpha = Math.max(0, 1 - t / 2600);
+        ctx.globalAlpha = Math.max(0, 1 - Math.max(0, t - 2200) / (LIFE - 2200));
         ctx.translate(p.x, p.y); ctx.rotate(p.rot);
+        ctx.scale(1, Math.cos(t / 120 + p.wob)); // paper flip
         ctx.fillStyle = p.col;
         if (p.shape === 0) ctx.fillRect(-p.r, -p.r / 2, p.r * 2, p.r);
         else if (p.shape === 1) { ctx.beginPath(); ctx.arc(0, 0, p.r / 1.6, 0, Math.PI * 2); ctx.fill(); }
-        else { ctx.beginPath(); ctx.moveTo(0, -p.r); ctx.lineTo(p.r, p.r); ctx.lineTo(-p.r, p.r); ctx.closePath(); ctx.fill(); }
+        else if (p.shape === 2) { ctx.beginPath(); ctx.moveTo(0, -p.r); ctx.lineTo(p.r, p.r); ctx.lineTo(-p.r, p.r); ctx.closePath(); ctx.fill(); }
+        else star(p.r);
         ctx.restore();
       });
-      if (t < 2600) requestAnimationFrame(draw); else c.remove();
+      if (t < LIFE) requestAnimationFrame(draw); else c.remove();
     })(t0);
+  }
+
+  function sparkleTrail(ms) {
+    var until = performance.now() + ms, last = 0;
+    function onMove(e) {
+      var now = performance.now();
+      if (now > until) { document.removeEventListener("pointermove", onMove); return; }
+      if (now - last < 28) return;
+      last = now;
+      var s = document.createElement("span");
+      s.className = "sparkle";
+      s.setAttribute("aria-hidden", "true");
+      s.style.left = e.clientX + "px";
+      s.style.top = e.clientY + "px";
+      s.style.setProperty("--dx", (Math.random() - 0.5) * 40 + "px");
+      s.style.setProperty("--dy", Math.random() * 30 + 10 + "px");
+      if (Math.random() < 0.4) s.style.background = "var(--accent-light)";
+      document.body.appendChild(s);
+      setTimeout(function () { s.remove(); }, 820);
+    }
+    document.addEventListener("pointermove", onMove, { passive: true });
   }
 
   /* ---------- Cursor follower ---------- */
