@@ -887,27 +887,86 @@ main{ padding-left: var(--rail-w); }
 :root[data-theme="dark"] .theme-toggle .icon-moon{ transform: translateY(-26px) rotate(-90deg); opacity: 0; }
 :root[data-theme="dark"] .theme-toggle .icon-sun{ transform: none; opacity: 1; }
 
-/* ---------- Theme switch: one synced wipe from the top of the screen ----------
+/* ---------- Theme switch: double ripple from the toggle ----------
    The browser snapshots the old theme, applies the new one instantly, then
-   reveals the new page through a soft-edged mask that sweeps top → bottom.
-   Every element changes in the same frame, at any scroll position. */
+   reveals the new page through a soft-edged circle growing from the button:
+   it bursts out, pulls back a touch, then floods the screen. Two echo rings
+   ride on top in their own transition layer, driven by the same radius so
+   they stay perfectly in sync. Every element changes in the same frame. */
+@property --vt-r{ syntax: "<length>"; inherits: true; initial-value: 0px; }
+@property --vt-echo{ syntax: "<length>"; inherits: true; initial-value: 0px; }
+
+:root{ --vt-x: 100vw; --vt-y: 0px; --vt-R: 150vmax; --vt-dur: 1.15s; }
+
 ::view-transition-old(root),
 ::view-transition-new(root){
   animation: none;
   mix-blend-mode: normal;
 }
 ::view-transition-new(root){
-  -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 46%, transparent 54%, transparent 100%);
-          mask-image: linear-gradient(to bottom, #000 0%, #000 46%, transparent 54%, transparent 100%);
-  -webkit-mask-size: 100% 230%;
-          mask-size: 100% 230%;
-  -webkit-mask-repeat: no-repeat;
-          mask-repeat: no-repeat;
-  animation: themeWipe .9s cubic-bezier(.65,0,.35,1) both;
+  -webkit-mask-image: radial-gradient(circle at var(--vt-x) var(--vt-y), #000 calc(var(--vt-r) - 36px), transparent var(--vt-r));
+          mask-image: radial-gradient(circle at var(--vt-x) var(--vt-y), #000 calc(var(--vt-r) - 36px), transparent var(--vt-r));
+  animation: rippleReveal var(--vt-dur) both;
 }
-@keyframes themeWipe{
-  from{ -webkit-mask-position: 0 100%; mask-position: 0 100%; }
-  to  { -webkit-mask-position: 0 0;    mask-position: 0 0; }
+/* Burst → slight pull-back (the "double" beat) → flood */
+@keyframes rippleReveal{
+  0%  { --vt-r: 0px;                          animation-timing-function: cubic-bezier(.2,.9,.3,1); }
+  28% { --vt-r: calc(var(--vt-R) * .24);      animation-timing-function: cubic-bezier(.4,0,.6,1); }
+  40% { --vt-r: calc(var(--vt-R) * .205);     animation-timing-function: cubic-bezier(.7,0,.25,1); }
+  100%{ --vt-r: calc(var(--vt-R) + 40px); }
+}
+
+/* Echo-ring layer: lives above the page snapshots during the swap */
+.ripple-layer{
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  pointer-events: none;
+  view-transition-name: theme-ripple;
+  overflow: hidden;
+}
+::view-transition-group(theme-ripple),
+::view-transition-new(theme-ripple){ animation: none; }
+::view-transition-old(theme-ripple){ display: none; }
+
+.ripple-ring{
+  position: absolute;
+  left: var(--vt-x); top: var(--vt-y);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+}
+/* Ring 1: rides exactly on the reveal edge (same keyframes, same clock) */
+.ripple-edge{
+  width: calc(var(--vt-r) * 2 - 36px);
+  height: calc(var(--vt-r) * 2 - 36px);
+  border: 2px solid var(--accent);
+  box-shadow: 0 0 18px rgba(139,156,240,.45), inset 0 0 18px rgba(139,156,240,.25);
+  animation: rippleReveal var(--vt-dur) both, ringFade var(--vt-dur) both;
+}
+@keyframes ringFade{
+  0%, 70%{ opacity: .9; }
+  100%   { opacity: 0; }
+}
+/* Ring 2: thinner echo that shoots ahead on the pull-back beat and fades */
+.ripple-echo{
+  width: calc(var(--vt-echo) * 2);
+  height: calc(var(--vt-echo) * 2);
+  border: 1.5px solid var(--accent-light);
+  animation: rippleEcho calc(var(--vt-dur) * .8) cubic-bezier(.15,.7,.3,1) calc(var(--vt-dur) * .3) both;
+}
+@keyframes rippleEcho{
+  0%  { --vt-echo: calc(var(--vt-R) * .2); opacity: .85; }
+  100%{ --vt-echo: calc(var(--vt-R) * .95); opacity: 0; }
+}
+/* Spark: a quick flash at the button the moment you click */
+.ripple-spark{
+  width: 0; height: 0;
+  background: radial-gradient(circle, var(--accent-light) 0%, transparent 70%);
+  animation: rippleSpark .5s ease-out both;
+}
+@keyframes rippleSpark{
+  0%  { width: 0;    height: 0;    opacity: .9; }
+  100%{ width: 90px; height: 90px; opacity: 0; }
 }
 /* While swapping, freeze per-element color transitions so nothing lags behind
    the wipe (the toggle keeps its own animation) */

@@ -256,12 +256,35 @@
 
       switching = true;
       if (document.startViewTransition) {
-        // Synced top-down wipe of the whole visible page
+        // Double ripple from the button's center, sized to reach the far corner
+        var r = themeBtn.getBoundingClientRect();
+        var x = r.left + r.width / 2;
+        var y = r.top + r.height / 2;
+        var R = Math.hypot(Math.max(x, innerWidth - x), Math.max(y, innerHeight - y));
+        root.style.setProperty("--vt-x", x + "px");
+        root.style.setProperty("--vt-y", y + "px");
+        root.style.setProperty("--vt-R", Math.ceil(R) + "px");
+
         root.classList.add("theme-switching");
-        var vt = document.startViewTransition(function () { applyTheme(next); });
+        var layer;
+        var vt = document.startViewTransition(function () {
+          applyTheme(next);
+          // Rings are added with the new theme so they draw in its colors,
+          // in their own transition layer above the page snapshots
+          layer = document.createElement("div");
+          layer.className = "ripple-layer";
+          layer.setAttribute("aria-hidden", "true");
+          layer.innerHTML =
+            '<span class="ripple-ring ripple-spark"></span>' +
+            '<span class="ripple-ring ripple-edge"></span>' +
+            '<span class="ripple-ring ripple-echo"></span>';
+          document.body.appendChild(layer);
+        });
         var finish = function () {
           root.classList.remove("theme-switching");
           switching = false;
+          // Let the echo ring finish fading, then clean up
+          setTimeout(function () { if (layer) layer.remove(); }, 250);
         };
         vt.finished.then(finish, finish);
       } else {
