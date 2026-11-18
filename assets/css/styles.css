@@ -853,7 +853,8 @@ main{ padding-left: var(--rail-w); }
 
 /* ---------- Theme toggle ---------- */
 /* Minimal rounded tile. The tile itself never moves — only the icon morphs. */
-.theme-toggle{
+.theme-toggle,
+.surprise-btn{
   width: 38px; height: 38px;
   display: inline-flex; align-items: center; justify-content: center;
   padding: 0;
@@ -864,12 +865,39 @@ main{ padding-left: var(--rail-w); }
   cursor: pointer;
   transition: border-color .2s ease;
 }
-:root[data-theme="dark"] .theme-toggle{
+:root[data-theme="dark"] .theme-toggle,
+:root[data-theme="dark"] .surprise-btn{
   background: #1B1B1D;
   border-color: #2C2C30;
   color: #F7F7F8;
 }
-.theme-toggle:hover{ border-color: var(--accent); }
+.theme-toggle:hover,
+.surprise-btn:hover{ border-color: var(--accent); }
+
+/* Surprise tile: still tile, only the sparkles inside animate */
+.sp-icon{ width: 19px; height: 19px; overflow: visible; }
+.sp-big, .sp-small, .sp-dot{
+  transform-box: fill-box;
+  transform-origin: center;
+  transition: transform .45s cubic-bezier(.3,1.5,.45,1), opacity .3s ease;
+}
+.surprise-btn:hover .sp-big{ transform: rotate(45deg) scale(1.08); }
+.surprise-btn:hover .sp-small{ transform: rotate(-45deg) scale(1.15); }
+.surprise-btn:hover .sp-dot{ transform: scale(1.5); }
+/* Click: sparkles burst — big one spins, small ones pop */
+.surprise-btn.pop .sp-big{ animation: spSpin .8s cubic-bezier(.3,1.4,.45,1) both; }
+.surprise-btn.pop .sp-small{ animation: spPop .7s cubic-bezier(.3,1.6,.45,1) .08s both; }
+.surprise-btn.pop .sp-dot{ animation: spPop .6s cubic-bezier(.3,1.6,.45,1) .16s both; }
+@keyframes spSpin{
+  0%  { transform: rotate(0) scale(1); }
+  35% { transform: rotate(200deg) scale(.6); }
+  100%{ transform: rotate(360deg) scale(1); }
+}
+@keyframes spPop{
+  0%  { transform: scale(1); }
+  40% { transform: scale(0); opacity: 0; }
+  100%{ transform: scale(1); opacity: 1; }
+}
 
 .tt-icon{ width: 20px; height: 20px; overflow: visible; }
 .tt-core, .tt-cut, .tt-rays{
@@ -1344,7 +1372,53 @@ main{ padding-left: var(--rail-w); }
 @keyframes tipOut{ to{ opacity: 0; transform: translateY(-7px); filter: blur(2px); } }
 @keyframes tipIn{ from{ opacity: 0; transform: translateY(7px); filter: blur(2px); } }
 
-/* ---------- "Surprise me" celebration ---------- */
+/* ---------- "Surprise me" celebration ----------
+   JS picks everything currently on screen and sets --sxd (a delay based on
+   its vertical position) so the effects sweep down the screen as a wave. */
+.sx-ch{ display: inline-block; white-space: pre; }
+.sx-heading .sx-ch{ animation: chWave .75s cubic-bezier(.3,1.5,.5,1) calc(var(--sxd, 0ms) + var(--i) * 32ms) both; }
+
+/* Text: lifts gently and flashes the accent */
+.sx-text{ animation: sxText .9s cubic-bezier(.3,1.3,.5,1) var(--sxd, 0ms) both; }
+@keyframes sxText{
+  35% { transform: translateY(-5px); color: var(--accent); }
+}
+/* Cards / boxes: pop with a tilt and an accent edge glow */
+.sx-box{ animation: sxBox .9s cubic-bezier(.3,1.4,.5,1) var(--sxd, 0ms) both; }
+@keyframes sxBox{
+  30% { transform: translateY(-6px) scale(1.03) rotate(-1deg); box-shadow: 0 0 0 2px var(--accent), 0 14px 30px rgba(59,79,160,.2); }
+  60% { transform: translateY(-2px) scale(1.01) rotate(.6deg); }
+}
+/* Chips / tags: hop */
+.sx-chip{ animation: sxChip .6s cubic-bezier(.3,1.6,.5,1) var(--sxd, 0ms) both; }
+@keyframes sxChip{
+  40% { transform: translateY(-8px) scale(1.08); background: var(--accent); color: var(--on-ink); border-color: var(--accent); }
+}
+/* Buttons: wiggle */
+.sx-btn{ animation: sxBtn .7s ease var(--sxd, 0ms) both; }
+@keyframes sxBtn{
+  20% { transform: rotate(-6deg) scale(1.05); }
+  40% { transform: rotate(5deg) scale(1.05); }
+  60% { transform: rotate(-3deg); }
+  80% { transform: rotate(2deg); }
+}
+/* Chart bars bounce */
+.sx-chart rect:not(.chart-axis){ animation: sxBar .8s cubic-bezier(.3,1.6,.5,1) calc(var(--sxd, 0ms) + var(--i, 0) * 60ms) both; }
+@keyframes sxBar{ 40%{ transform: scaleY(1.3); } }
+/* Line chart and DFS path redraw themselves */
+.sx-redraw .line-path,
+.sx-redraw .dfs-path{ animation: sxRedraw 1.3s ease var(--sxd, 0ms) both; }
+@keyframes sxRedraw{ from{ stroke-dashoffset: 100; } }
+.brand-dot{ display: inline-block; }
+/* Dots / markers: ripple */
+.sx-dot{ animation: sxDot .8s ease-out var(--sxd, 0ms) both; }
+@keyframes sxDot{
+  40% { transform: scale(1.6); box-shadow: 0 0 0 8px var(--accent-tint); }
+}
+/* Rail line flashes */
+.rail-progress.sx-flash{ animation: sxFlash 1.2s ease both; }
+@keyframes sxFlash{ 30%{ box-shadow: 0 0 22px 3px rgba(59,79,160,.7); } }
+
 /* Name: letters bounce in a wave and flash the accent */
 .hero-title .ch{ display: inline-block; white-space: pre; }
 .hero-title.wave .ch{ animation: chWave .75s cubic-bezier(.3,1.5,.5,1) calc(var(--i) * 45ms) both; }

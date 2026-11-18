@@ -875,7 +875,7 @@
      from the top → name letters wave → photo jumps out of its frame → rail balls
      pulse in sequence → mic hops → sparkle trail follows the cursor/finger */
   var surprising = false;
-  function surprise() {
+  function surprise(originEl) {
     if (surprising) return;
     surprising = true;
     setTimeout(function () { surprising = false; }, 3600);
@@ -889,42 +889,98 @@
     setTimeout(function () { haptic("success"); }, 420);
     if (reduceMotion) return;
 
-    // Confetti: two cannons + a top burst, theme colors, four shapes
-    confetti();
+    // Confetti: two cannons + a top burst (+ a burst from the button, if pressed)
+    confetti(originEl);
 
-    // Name: letters wave (split once, keep the real name for screen readers)
-    var title = document.querySelector(".hero-title");
-    if (title) {
-      if (!title.querySelector(".ch")) {
-        var name = title.textContent;
-        title.setAttribute("aria-label", name);
-        title.textContent = "";
-        name.split("").forEach(function (ch, i) {
-          var s = document.createElement("span");
-          s.className = "ch";
-          s.setAttribute("aria-hidden", "true");
-          s.style.setProperty("--i", i);
-          s.textContent = ch;
-          title.appendChild(s);
-        });
-      }
-      restartClass(title, "wave", 1400);
-    }
+    // Everything on screen joins in, sweeping top → bottom
+    celebrateVisible();
 
-    // Photo: jumps out of its frame
-    var photo = document.querySelector(".photo-frame img");
-    if (photo) setTimeout(function () { restartClass(photo, "cheer", 1500); }, 150);
-
-    // Rail: balls pulse one after another
+    // Rail (always on screen on desktop): balls pulse in turn, line flashes
     Array.prototype.forEach.call(document.querySelectorAll(".rail-num"), function (n, i) {
       setTimeout(function () { restartClass(n, "pulse", 750); }, 250 + i * 130);
     });
+    var rp = document.getElementById("railProgress");
+    if (rp) restartClass(rp, "sx-flash", 1300);
 
     // Mic: a happy hop
     if (micBtn) setTimeout(function () { restartClass(micBtn, "cheer", 950); }, 300);
 
     // Sparkle trail for 4 seconds
     sparkleTrail(4000);
+  }
+
+  /* Find what's on screen right now and give each kind of element its effect.
+     The delay grows with the element's position, so it reads as a wave. */
+  var SX = [
+    { cls: "sx-heading", max: 14, split: true,
+      sel: ".hero-title, .stage-title, .project-title, .edu-degree, .mini-title, .stage-eyebrow, .skill-cat, .coursework-label, .also-built-label, .timeline-org" },
+    { cls: "sx-text", max: 30,
+      sel: ".hero-sub, .stage-lede, .about-bio, .project-desc, .timeline-list li, .mini-desc, .edu-school, .edu-meta, .cert-list li, .deploy-value, .deploy-label, .hero-status-line, .timeline-date, .timeline-role, .footer p" },
+    { cls: "sx-box", max: 20,
+      sel: ".project-card, .edu-card, .skill-card, .mini-card, .deploy-card, .terminal, .cert-block" },
+    { cls: "sx-chip", max: 60, step: 25,
+      sel: ".chip, .status-stack span, .filter-btn, .project-stats li" },
+    { cls: "sx-btn", max: 10,
+      sel: "main .btn, .project-link, .hero-links a" },
+    { cls: "sx-chart", max: 6, sel: ".chart-bars" },
+    { cls: "sx-redraw", max: 6, sel: ".chart-line, .chart-path" },
+    { cls: "sx-dot", max: 12, sel: ".timeline-marker, .status-dot, .brand-dot" }
+  ];
+
+  function onScreen(el) {
+    var r = el.getBoundingClientRect();
+    return r.width > 0 && r.height > 0 && r.bottom > 0 && r.top < innerHeight && r.right > 0 && r.left < innerWidth;
+  }
+
+  function celebrateVisible() {
+    var vh = innerHeight;
+    SX.forEach(function (group) {
+      var els = Array.prototype.filter.call(document.querySelectorAll(group.sel), onScreen).slice(0, group.max);
+      els.forEach(function (el, i) {
+        var top = Math.max(0, el.getBoundingClientRect().top);
+        // Wave delay from position, plus a small per-item step for rows of chips
+        var delay = Math.round(200 + (top / vh) * 700 + (group.step ? (i % 8) * group.step : 0));
+        if (group.split) splitLetters(el, delay);
+        el.style.setProperty("--sxd", delay + "ms");
+        restartClass(el, group.cls, delay + 1300);
+        setTimeout(function () { el.style.removeProperty("--sxd"); }, delay + 1350);
+      });
+    });
+
+    // Photo jumps out of its frame if you can see it
+    var photo = document.querySelector(".photo-frame img");
+    if (photo && onScreen(photo)) setTimeout(function () { restartClass(photo, "cheer", 1500); }, 150);
+  }
+
+  // Split a plain-text heading into letters for the wave, then restore it exactly
+  function splitLetters(el, delay) {
+    if (el.children.length || el.querySelector(".sx-ch")) return; // only plain text
+    var original = el.textContent;
+    var hadLabel = el.hasAttribute("aria-label");
+    if (!hadLabel) el.setAttribute("aria-label", original.trim());
+    el.textContent = "";
+    original.split("").forEach(function (ch, i) {
+      var s = document.createElement("span");
+      s.className = "sx-ch";
+      s.setAttribute("aria-hidden", "true");
+      s.style.setProperty("--i", i);
+      s.textContent = ch;
+      el.appendChild(s);
+    });
+    setTimeout(function () {
+      el.textContent = original;
+      if (!hadLabel) el.removeAttribute("aria-label");
+    }, delay + 900 + original.length * 32);
+  }
+
+  /* Surprise button in the top bar */
+  var surpriseBtn = document.getElementById("surpriseBtn");
+  if (surpriseBtn) {
+    surpriseBtn.setAttribute("data-haptic-own", "");
+    surpriseBtn.addEventListener("click", function () {
+      restartClass(surpriseBtn, "pop", 850);
+      surprise(surpriseBtn);
+    });
   }
 
   function restartClass(el, cls, ms) {
@@ -934,7 +990,7 @@
     setTimeout(function () { el.classList.remove(cls); }, ms);
   }
 
-  function confetti() {
+  function confetti(originEl) {
     var c = document.createElement("canvas");
     c.setAttribute("aria-hidden", "true");
     c.style.cssText = "position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:110";
@@ -963,6 +1019,10 @@
     add(70, 0, H, 4 * scale + 3, 11 * scale + 4, -21, -13, 0);   // bottom-left cannon
     add(70, W, H, -11 * scale - 4, -4 * scale - 3, -21, -13, 0); // bottom-right cannon
     add(60, W / 2, -10, -7, 7, 1, 6, 350);                     // top burst, a beat later
+    if (originEl) {                                             // burst from the button pressed
+      var ob = originEl.getBoundingClientRect();
+      add(36, ob.left + ob.width / 2, ob.top + ob.height / 2, -7, 7, -7, 3, 0);
+    }
 
     function star(r) {
       ctx.beginPath();
