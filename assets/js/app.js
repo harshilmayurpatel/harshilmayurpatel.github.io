@@ -240,9 +240,18 @@
     };
 
     syncThemeLabel();
+    themeBtn.setAttribute("data-haptic-own", "");
     themeBtn.addEventListener("click", function () {
       if (switching) return;
       var next = root.getAttribute("data-theme") === "dark" ? "light" : "dark";
+
+      haptic("toggle");
+      // Replace (don't queue) so the island always matches the current theme
+      setTimeout(function () {
+        notify(next === "dark"
+          ? { icon: "moon", tone: "info", text: "Dark mode on", dur: 1800 }
+          : { icon: "sun", tone: "info", text: "Light mode on", dur: 1800 }, { replace: true });
+      }, 180);
 
       if (reduceMotion) {
         applyTheme(next);
@@ -415,7 +424,9 @@
   var filterBtns = document.querySelectorAll(".filter-btn");
   var skillGrid = document.querySelector(".skill-grid");
   Array.prototype.forEach.call(filterBtns, function (btn) {
+    btn.setAttribute("data-haptic-own", "");
     btn.addEventListener("click", function () {
+      haptic("toggle");
       var f = btn.getAttribute("data-filter");
       Array.prototype.forEach.call(filterBtns, function (b) {
         var on = b === btn;
@@ -479,27 +490,427 @@
     }
   }
 
+  /* =========================================================
+     Haptics — Android: Vibration API. iPhone (Safari 18+): toggling a
+     native <input switch> plays a system haptic tick. Only ever fired
+     from a user's own tap.
+     ========================================================= */
+  var hapticInput = document.querySelector(".haptic-switch input");
+  var HAPTIC = { tap: [8], toggle: [14], success: [10, 60, 14], error: [30, 50, 30] };
+  function haptic(kind) {
+    var pattern = HAPTIC[kind] || HAPTIC.tap;
+    if (navigator.vibrate) {
+      try { navigator.vibrate(pattern); } catch (e) {}
+      return;
+    }
+    if (hapticInput) {
+      // One tick per pulse in the pattern (every other entry is a pause)
+      var pulses = Math.ceil(pattern.length / 2);
+      for (var p = 0; p < pulses; p++) {
+        setTimeout(function () { hapticInput.parentNode.click(); }, p * 70);
+      }
+    }
+  }
+  // A light tick on any link or button tap on touch screens
+  document.addEventListener("pointerdown", function (e) {
+    if (e.pointerType !== "touch") return;
+    var el = e.target.closest("a, button");
+    if (el && !el.hasAttribute("data-haptic-own")) haptic("tap");
+  }, { passive: true });
+
+  /* =========================================================
+     Dynamic Island — queue of short messages in a morphing pill
+     ========================================================= */
+  var ICONS = {
+    check: '<svg viewBox="0 0 24 24"><path d="M5 12.5l4.2 4.2L19 7" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+    moon: '<svg viewBox="0 0 24 24"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z" fill="currentColor"/></svg>',
+    sun: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4.5" fill="currentColor"/><g stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2M5.3 5.3l1.4 1.4M17.3 17.3l1.4 1.4M5.3 18.7l1.4-1.4M17.3 6.7l1.4-1.4"/></g></svg>',
+    mic: '<svg viewBox="0 0 24 24"><rect x="8.6" y="2.6" width="6.8" height="11.6" rx="3.4" fill="currentColor"/><path d="M5.6 11.2a6.4 6.4 0 0 0 12.8 0M12 17.6v3.4" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>',
+    down: '<svg viewBox="0 0 24 24"><path d="M12 4v11m0 0l-4.5-4.5M12 15l4.5-4.5M5 20h14" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+    arrow: '<svg viewBox="0 0 24 24"><path d="M12 5v14m0 0l-5-5m5 5l5-5" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+    alert: '<svg viewBox="0 0 24 24"><path d="M12 7v6M12 17h.01" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/></svg>',
+    spark: '<svg viewBox="0 0 24 24"><path d="M12 2.5l2.2 6.3 6.3 2.2-6.3 2.2L12 19.5l-2.2-6.3L3.5 11l6.3-2.2z" fill="currentColor"/></svg>',
+    help: '<svg viewBox="0 0 24 24"><path d="M9.2 9a2.9 2.9 0 1 1 4.2 2.6c-.9.5-1.4 1.1-1.4 2.1M12 17.2h.01" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>',
+    link: '<svg viewBox="0 0 24 24"><path d="M7 17L17 7M9 7h8v8" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+  };
+
+  var islandEl = document.getElementById("island");
+  var islandInner = document.getElementById("islandInner");
+  var islandIcon = document.getElementById("islandIcon");
+  var islandText = document.getElementById("islandText");
+  var islandQueue = [];
+  var islandBusy = false;
+  var islandHideTimer = null;
+  var islandSticky = null; // a persistent state (e.g. listening) that messages return to
+
+  function islandRender(msg) {
+    islandEl.setAttribute("data-tone", msg.tone || "info");
+    islandEl.classList.toggle("tall", !!msg.tall);
+    islandEl.classList.toggle("listening", !!msg.listening);
+    islandIcon.innerHTML = ICONS[msg.icon] || ICONS.spark;
+    if (msg.html) islandText.innerHTML = msg.html; else islandText.textContent = msg.text || "";
+    // Measure the content so the pill can spring to its exact size
+    var w = Math.min(islandInner.scrollWidth, window.innerWidth - 24);
+    var h = Math.max(32, islandInner.scrollHeight);
+    islandEl.style.setProperty("--iw", Math.ceil(w) + "px");
+    islandEl.style.setProperty("--ih", Math.ceil(h) + "px");
+  }
+
+  function islandShowNext() {
+    if (!islandQueue.length) {
+      islandBusy = false;
+      if (islandSticky) { swapTo(islandSticky); return; }
+      islandEl.classList.remove("show", "listening", "hearing");
+      islandEl.style.setProperty("--iw", "32px");
+      islandEl.style.setProperty("--ih", "32px");
+      return;
+    }
+    islandBusy = true;
+    var msg = islandQueue.shift();
+    swapTo(msg);
+    clearTimeout(islandHideTimer);
+    islandHideTimer = setTimeout(islandShowNext, msg.dur || 2200);
+  }
+
+  function swapTo(msg) {
+    if (islandEl.classList.contains("show")) {
+      // Content blurs out, pill springs to the new size, content blurs in
+      islandEl.classList.add("swap");
+      setTimeout(function () {
+        islandRender(msg);
+        islandEl.classList.remove("swap");
+      }, 170);
+    } else {
+      islandRender(msg);
+      void islandEl.offsetWidth;
+      islandEl.classList.add("show");
+    }
+  }
+
+  // notify({ icon, text|html, tone, dur, tall, listening }, { queue })
+  // The newest event replaces whatever is showing (the pill morphs from it),
+  // so the island always reflects the current state. Pass { queue: true }
+  // to wait for the current message instead.
+  function notify(msg, opts) {
+    if (!islandEl) return;
+    var queue = opts && opts.queue;
+    if (!queue) islandQueue = [];
+    islandQueue.push(msg);
+    if (!islandBusy || !queue) {
+      clearTimeout(islandHideTimer);
+      islandShowNext();
+    }
+  }
+  function islandSetSticky(msg) {
+    islandSticky = msg;
+    if (msg && !islandBusy) swapTo(msg);
+    if (!msg && !islandBusy) islandShowNext();
+  }
+
   /* ---------- Copy email ---------- */
   var copyBtn = document.getElementById("copyEmail");
-  var toast = document.getElementById("toast");
-  var toastTimer;
-  function showToast(msg) {
-    if (!toast) return;
-    toast.textContent = msg;
-    toast.classList.add("show");
-    clearTimeout(toastTimer);
-    toastTimer = setTimeout(function () { toast.classList.remove("show"); }, 1800);
-  }
   if (copyBtn) {
+    copyBtn.setAttribute("data-haptic-own", "");
     copyBtn.addEventListener("click", function () {
       var email = copyBtn.getAttribute("data-email");
-      var ok = function () { showToast("✓ Copied " + email); };
+      var ok = function () {
+        haptic("success");
+        notify({ icon: "check", tone: "ok", text: "Email copied" });
+      };
+      var fail = function () {
+        notify({ icon: "alert", tone: "warn", html: "Couldn't copy<small>" + email + "</small>", dur: 3000 });
+      };
       if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(email).then(ok, function () { showToast(email); });
+        navigator.clipboard.writeText(email).then(ok, fail);
       } else {
-        showToast(email);
+        fail();
       }
     });
+  }
+
+  /* ---------- Resume links ---------- */
+  Array.prototype.forEach.call(document.querySelectorAll('a[href$=".pdf"]'), function (a) {
+    a.addEventListener("click", function () {
+      var dl = a.hasAttribute("download");
+      notify({ icon: dl ? "down" : "link", tone: "ok", text: dl ? "Resume downloading" : "Opening resume" });
+    });
+  });
+
+  /* =========================================================
+     Voice navigation — push-to-talk with the Web Speech API
+     ========================================================= */
+  var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  var micWrap = document.getElementById("micWrap");
+  var micBtn = document.getElementById("micBtn");
+  var micTipText = document.getElementById("micTipText");
+
+  function currentSection() {
+    var active = document.querySelector(".rail-node.active");
+    return active ? active.getAttribute("data-section") : "top";
+  }
+  function goTo(id, label) {
+    var el = id === "top" ? document.body : document.getElementById(id);
+    if (!el) return;
+    if (id === "top") window.scrollTo({ top: 0, behavior: reduceMotion ? "auto" : "smooth" });
+    else el.scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "start" });
+    notify({ icon: "arrow", tone: "ok", text: label });
+  }
+  function isDark() { return document.documentElement.getAttribute("data-theme") === "dark"; }
+
+  // Each command: patterns to match, a label for suggestions, and the action
+  var COMMANDS = [
+    { re: /\b(dark|night|black)\b|go dark|lights? off/, say: "dark mode",
+      when: function () { return !isDark(); },
+      run: function () { if (!isDark()) themeBtn.click(); else notify({ icon: "moon", tone: "info", text: "Already in dark mode" }); } },
+    { re: /\b(light|day|white|bright)\b|go light|lights? on/, say: "light mode",
+      when: function () { return isDark(); },
+      run: function () { if (isDark()) themeBtn.click(); else notify({ icon: "sun", tone: "info", text: "Already in light mode" }); } },
+    { re: /project|work|built|build|portfolio|show (me )?(your )?stuff/, say: "show projects",
+      when: function () { return currentSection() !== "build"; },
+      run: function () { goTo("build", "Showing projects"); } },
+    { re: /experience|job|intern|history|career|process/, say: "show experience",
+      when: function () { return currentSection() !== "process"; },
+      run: function () { goTo("process", "Showing experience"); } },
+    { re: /skill|stack|tech|tools?\b|language/, say: "show skills",
+      when: function () { return currentSection() !== "stack"; },
+      run: function () { goTo("stack", "Showing skills"); } },
+    { re: /about|education|degree|who is|background|ingest/, say: "about Harshil",
+      when: function () { return currentSection() !== "ingest"; },
+      run: function () { goTo("ingest", "About Harshil"); } },
+    { re: /contact|hire|reach|get in touch|talk|deploy|email me/, say: "contact",
+      when: function () { return currentSection() !== "deploy"; },
+      run: function () { goTo("deploy", "Let's talk"); } },
+    { re: /resume|cv|curriculum/, say: "download resume",
+      when: function () { return true; },
+      run: function () {
+        var a = document.querySelector('a[download][href$=".pdf"]');
+        if (a) a.click();
+      } },
+    { re: /copy.*(mail|email)|(mail|email).*copy/, say: "copy email",
+      when: function () { return true; },
+      run: function () { if (copyBtn) copyBtn.click(); } },
+    { re: /github|git hub|code/, say: "open GitHub",
+      when: function () { return true; },
+      run: function () { notify({ icon: "link", tone: "ok", text: "Opening GitHub" }); window.open("https://github.com/harshilmayurpatel", "_blank", "noopener"); } },
+    { re: /linked ?in/, say: "open LinkedIn",
+      when: function () { return true; },
+      run: function () { notify({ icon: "link", tone: "ok", text: "Opening LinkedIn" }); window.open("https://www.linkedin.com/in/harshilmayurpatel", "_blank", "noopener"); } },
+    { re: /\btop\b|scroll up|go up|home|beginning|start/, say: "go to top",
+      when: function () { return window.scrollY > 400; },
+      run: function () { goTo("top", "Back to top"); } },
+    { re: /surprise|hello|hi there|hey|party|celebrate/, say: "surprise me",
+      when: function () { return true; },
+      run: function () { surprise(); } },
+    { re: /help|what can i (say|do)|commands|options/, say: "help",
+      when: function () { return true; },
+      run: function () { showHelp(); } }
+  ];
+
+  function showHelp() {
+    notify({
+      icon: "help", tone: "info", tall: true, dur: 6500,
+      html: "Things you can say" +
+        '<span class="cmd-list"><span>dark / light mode</span><span>show projects</span>' +
+        "<span>show skills</span><span>show experience</span><span>about Harshil</span>" +
+        "<span>contact</span><span>download resume</span><span>copy email</span>" +
+        "<span>open GitHub</span><span>surprise me</span></span>" +
+        "<small>Speech is processed by your browser's speech service.</small>"
+    }, { replace: true });
+  }
+
+  function suggestions() {
+    var list = COMMANDS.filter(function (c) { return c.say !== "help" && c.when(); }).map(function (c) { return c.say; });
+    return list.length ? list : ["show projects"];
+  }
+
+  if (SR && micWrap && micBtn) {
+    micWrap.hidden = false;
+    micBtn.setAttribute("data-haptic-own", "");
+
+    /* Rotating suggestion: one at a time, every 2s, while hovered */
+    var tipTimer = null;
+    var tipIndex = 0;
+    function setTip(text, animate) {
+      if (!animate) { micTipText.textContent = "“" + text + "”"; return; }
+      micTipText.classList.remove("swap-in");
+      micTipText.classList.add("swap-out");
+      setTimeout(function () {
+        micTipText.textContent = "“" + text + "”";
+        micTipText.classList.remove("swap-out");
+        void micTipText.offsetWidth;
+        micTipText.classList.add("swap-in");
+      }, 200);
+    }
+    function startTips() {
+      var list = suggestions();
+      tipIndex = 0;
+      setTip(list[0], false);
+      clearInterval(tipTimer);
+      tipTimer = setInterval(function () {
+        var l = suggestions(); // re-read: theme or section may have changed
+        tipIndex = (tipIndex + 1) % l.length;
+        setTip(l[tipIndex], true);
+      }, 2000);
+    }
+    function stopTips() { clearInterval(tipTimer); }
+    micWrap.addEventListener("mouseenter", startTips);
+    micWrap.addEventListener("mouseleave", stopTips);
+    micBtn.addEventListener("focus", startTips);
+    micBtn.addEventListener("blur", stopTips);
+
+    /* Recognition */
+    var rec = null;
+    var listening = false;
+    var handled = false;
+
+    function setListening(on) {
+      listening = on;
+      micBtn.classList.toggle("listening", on);
+      micWrap.classList.toggle("is-listening", on);
+      micBtn.setAttribute("aria-pressed", String(on));
+      if (!on) {
+        islandEl.classList.remove("hearing");
+        islandSetSticky(null);
+      }
+    }
+
+    function handle(transcript) {
+      var said = transcript.toLowerCase().trim();
+      for (var i = 0; i < COMMANDS.length; i++) {
+        if (COMMANDS[i].re.test(said)) {
+          haptic("success");
+          COMMANDS[i].run();
+          return true;
+        }
+      }
+      // "switch theme" / "change mode" without saying which: just flip it
+      if (/theme|mode|switch|toggle/.test(said)) { haptic("success"); themeBtn.click(); return true; }
+      return false;
+    }
+
+    function startListening() {
+      if (listening) { rec && rec.stop(); return; }
+      stopTips();
+      rec = new SR();
+      rec.lang = "en-US";
+      rec.interimResults = true;
+      rec.maxAlternatives = 3;
+      rec.continuous = false;
+      handled = false;
+
+      var hint = suggestions()[0];
+      setListening(true);
+      haptic("toggle");
+      islandSetSticky({ icon: "mic", tone: "live", listening: true,
+        html: "Listening<small>“" + hint + "”</small>" });
+
+      rec.onspeechstart = function () { islandEl.classList.add("hearing"); };
+      rec.onspeechend = function () { islandEl.classList.remove("hearing"); };
+      rec.onresult = function (e) {
+        var res = e.results[e.results.length - 1];
+        var text = res[0].transcript;
+        if (!res.isFinal) {
+          // Live transcript in the island
+          islandRender({ icon: "mic", tone: "live", listening: true, html: "“" + text + "”" });
+          islandEl.classList.add("hearing");
+          return;
+        }
+        var ok = false;
+        for (var a = 0; a < res.length && !ok; a++) ok = handle(res[a].transcript);
+        handled = true;
+        setListening(false);
+        if (!ok) {
+          haptic("error");
+          notify({ icon: "alert", tone: "warn", html: "Didn't catch that<small>say “help”</small>", dur: 2600 }, { replace: true });
+        }
+      };
+      rec.onerror = function (e) {
+        setListening(false);
+        handled = true;
+        var msg = e.error === "not-allowed" || e.error === "service-not-allowed"
+          ? "Mic blocked<small>allow it in site settings</small>"
+          : e.error === "no-speech" ? "Didn't hear anything"
+          : e.error === "network" ? "Voice needs internet"
+          : e.error === "aborted" ? null
+          : "Voice isn't available";
+        if (msg) { haptic("error"); notify({ icon: "alert", tone: "warn", html: msg, dur: 2600 }, { replace: true }); }
+      };
+      rec.onend = function () {
+        if (listening) setListening(false);
+        if (!handled) notify({ icon: "alert", tone: "warn", html: "Didn't hear anything", dur: 2400 }, { replace: true });
+      };
+
+      try { rec.start(); } catch (err) { setListening(false); }
+    }
+
+    micBtn.addEventListener("click", startListening);
+
+    // Surprise #1: press V anywhere (outside text fields) to talk, Esc to stop
+    document.addEventListener("keydown", function (e) {
+      var tag = (e.target.tagName || "").toLowerCase();
+      if (tag === "input" || tag === "textarea" || e.target.isContentEditable) return;
+      if (e.metaKey || e.ctrlKey || e.altKey) return;
+      if (e.key === "v" || e.key === "V") { e.preventDefault(); startListening(); }
+      if (e.key === "Escape" && listening && rec) rec.abort();
+    });
+  }
+
+  /* ---------- Surprise #3: a one-time welcome tip for first-time visitors ---------- */
+  (function welcomeOnce() {
+    if (!SR || !micWrap || micWrap.hidden) return;
+    var seen = false;
+    try { seen = localStorage.getItem("voiceTipSeen") === "1"; } catch (e) {}
+    if (seen) return;
+    setTimeout(function () {
+      if (window.scrollY > 200) return; // only greet people still at the top
+      var desktop = finePointer;
+      notify({ icon: "mic", tone: "info", dur: 3800,
+        html: "Try voice" + "<small>" + (desktop ? "press V and say “show projects”" : "tap the mic") + "</small>" });
+      try { localStorage.setItem("voiceTipSeen", "1"); } catch (e) {}
+    }, 2600);
+  })();
+
+  /* ---------- Surprise #2: "surprise me" — greeting + confetti in theme colors ---------- */
+  function surprise() {
+    var hour = new Date().getHours();
+    var greet = hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening";
+    notify({ icon: "spark", tone: "info", html: greet + "<small>thanks for stopping by</small>", dur: 3200 }, { replace: true });
+    if (reduceMotion) return;
+    var c = document.createElement("canvas");
+    c.setAttribute("aria-hidden", "true");
+    c.style.cssText = "position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:110";
+    document.body.appendChild(c);
+    var dpr = Math.min(window.devicePixelRatio || 1, 2);
+    c.width = innerWidth * dpr; c.height = innerHeight * dpr;
+    var ctx = c.getContext("2d");
+    ctx.scale(dpr, dpr);
+    var colors = isDark() ? ["#8B9CF0", "#B7C2F7", "#E8EAF2", "#5E6FD0"] : ["#3B4FA0", "#93A2E8", "#262F73", "#D7E6F7"];
+    var parts = [];
+    for (var i = 0; i < 110; i++) {
+      parts.push({
+        x: innerWidth / 2 + (Math.random() - 0.5) * 120, y: 30,
+        vx: (Math.random() - 0.5) * 11, vy: Math.random() * 5 + 2,
+        r: Math.random() * 5 + 3, rot: Math.random() * 6, vr: (Math.random() - 0.5) * 0.3,
+        col: colors[i % colors.length], shape: i % 3
+      });
+    }
+    var t0 = performance.now();
+    (function draw(now) {
+      var t = now - t0;
+      ctx.clearRect(0, 0, innerWidth, innerHeight);
+      parts.forEach(function (p) {
+        p.vy += 0.18; p.vx *= 0.99; p.x += p.vx; p.y += p.vy; p.rot += p.vr;
+        ctx.save();
+        ctx.globalAlpha = Math.max(0, 1 - t / 2600);
+        ctx.translate(p.x, p.y); ctx.rotate(p.rot);
+        ctx.fillStyle = p.col;
+        if (p.shape === 0) ctx.fillRect(-p.r, -p.r / 2, p.r * 2, p.r);
+        else if (p.shape === 1) { ctx.beginPath(); ctx.arc(0, 0, p.r / 1.6, 0, Math.PI * 2); ctx.fill(); }
+        else { ctx.beginPath(); ctx.moveTo(0, -p.r); ctx.lineTo(p.r, p.r); ctx.lineTo(-p.r, p.r); ctx.closePath(); ctx.fill(); }
+        ctx.restore();
+      });
+      if (t < 2600) requestAnimationFrame(draw); else c.remove();
+    })(t0);
   }
 
   /* ---------- Cursor follower ---------- */

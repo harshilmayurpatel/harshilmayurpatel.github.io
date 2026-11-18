@@ -57,6 +57,18 @@
     <span></span><span></span><span></span>
   </button>
   <div class="topbar-actions">
+    <!-- Voice commands (hidden until the browser supports speech recognition) -->
+    <div class="mic-wrap" id="micWrap" hidden>
+      <button class="tile-btn mic-btn" id="micBtn" type="button" aria-label="Voice commands. Press V to talk" aria-describedby="micTip">
+        <svg class="mic-icon" viewBox="0 0 24 24" aria-hidden="true">
+          <rect class="mic-capsule" x="8.6" y="2.6" width="6.8" height="11.6" rx="3.4" fill="currentColor"/>
+          <path d="M5.6 11.2a6.4 6.4 0 0 0 12.8 0M12 17.6v3.4M9 21h6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+        <span class="mic-arc mic-arc-1" aria-hidden="true"></span>
+        <span class="mic-arc mic-arc-2" aria-hidden="true"></span>
+      </button>
+      <span class="mic-tip" id="micTip" role="tooltip"><span class="mic-tip-label">Try</span><span class="mic-tip-text" id="micTipText">“show projects”</span></span>
+    </div>
     <button class="theme-toggle" id="themeToggle" type="button" aria-label="Switch to dark mode">
       <!-- One icon that morphs: solid moon (light mode) ⇄ solid sun (dark mode) -->
       <svg class="tt-icon" viewBox="0 0 24 24" aria-hidden="true">
@@ -78,9 +90,21 @@
       </svg>
     </button>
     <a class="btn btn-ghost" href="mailto:harshilpatel.co@gmail.com">Email me</a>
-    <a class="btn btn-solid topbar-resume" href="assets/resume/Harshil_Patel_Resume.pdf" target="_blank" rel="noopener">Résumé</a>
+    <a class="btn btn-solid topbar-resume" href="assets/resume/Harshil_Patel_Resume.pdf" target="_blank" rel="noopener">Resume</a>
   </div>
 </header>
+
+<!-- Dynamic Island: one black pill that morphs to show what's happening -->
+<div class="island" id="island" role="status" aria-live="polite">
+  <div class="island-inner" id="islandInner">
+    <span class="island-icon" id="islandIcon" aria-hidden="true"></span>
+    <span class="island-text" id="islandText"></span>
+    <span class="island-wave" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span>
+  </div>
+</div>
+
+<!-- iPhone haptics: Safari 18+ ticks when a native switch toggles -->
+<label class="haptic-switch" aria-hidden="true"><input type="checkbox" switch tabindex="-1" /></label>
 
 <!-- Mobile nav drawer -->
 <div class="mobile-nav" id="mobileNav">
@@ -89,7 +113,7 @@
   <a href="#build">03 · Build</a>
   <a href="#stack">04 · Stack</a>
   <a href="#deploy">05 · Deploy</a>
-  <a href="assets/resume/Harshil_Patel_Resume.pdf" target="_blank" rel="noopener">Résumé</a>
+  <a href="assets/resume/Harshil_Patel_Resume.pdf" target="_blank" rel="noopener">Resume</a>
   <a href="mailto:harshilpatel.co@gmail.com" class="mobile-cta">Email me</a>
 </div>
 
@@ -451,11 +475,9 @@
       </div>
 
       <div class="deploy-resumes">
-        <a href="assets/resume/Harshil_Patel_Resume.pdf" download class="btn btn-solid"><svg class="icon"><use href="#i-download"/></svg>Download résumé</a>
+        <a href="assets/resume/Harshil_Patel_Resume.pdf" download class="btn btn-solid"><svg class="icon"><use href="#i-download"/></svg>Download resume</a>
         <button type="button" class="btn btn-outline" id="copyEmail" data-email="harshilpatel.co@gmail.com"><svg class="icon"><use href="#i-copy"/></svg><span>Copy email</span></button>
-      </div>
-      <div class="toast" id="toast" role="status" aria-live="polite"></div>
-    </div>
+      </div>    </div>
   </section>
 
   <footer class="footer">
