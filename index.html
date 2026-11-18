@@ -11,6 +11,17 @@
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 
 <link rel="stylesheet" href="assets/css/styles.css" />
+<script>
+  /* Apply saved/system theme before first paint to avoid a flash */
+  (function () {
+    var t = null;
+    try { t = localStorage.getItem("theme"); } catch (e) {}
+    if (t !== "light" && t !== "dark") {
+      t = window.matchMedia && matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+    }
+    document.documentElement.setAttribute("data-theme", t);
+  })();
+</script>
 </head>
 <body>
 
@@ -21,6 +32,9 @@
   <symbol id="i-mail" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" d="M3 5.5h18v13H3z"/><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" d="M3 6l9 7 9-7"/></symbol>
   <symbol id="i-phone" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" d="M6.6 10.8c1.4 2.8 3.8 5.1 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1C10.4 21 3 13.6 3 4.5c0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.3.2 2.5.6 3.6.1.4 0 .8-.2 1L6.6 10.8z"/></symbol>
   <symbol id="i-external" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" d="M7 17L17 7M9 7h8v8"/></symbol>
+  <symbol id="i-sun" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2.2M12 19.3v2.2M4.6 4.6l1.6 1.6M17.8 17.8l1.6 1.6M2.5 12h2.2M19.3 12h2.2M4.6 19.4l1.6-1.6M17.8 6.2l1.6-1.6"/></g></symbol>
+  <symbol id="i-moon" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/></symbol>
+  <symbol id="i-copy" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/></g></symbol>
   <symbol id="i-download" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" d="M12 3v12m0 0l-4-4m4 4l4-4M4 19h16"/></symbol>
 </svg>
 
@@ -43,6 +57,10 @@
     <span></span><span></span><span></span>
   </button>
   <div class="topbar-actions">
+    <button class="theme-toggle" id="themeToggle" type="button" aria-label="Switch to dark mode">
+      <svg class="icon icon-moon"><use href="#i-moon"/></svg>
+      <svg class="icon icon-sun"><use href="#i-sun"/></svg>
+    </button>
     <a class="btn btn-ghost" href="mailto:harshilpatel.co@gmail.com">Email me</a>
     <a class="btn btn-solid topbar-resume" href="assets/resume/Harshil_Patel_Resume.pdf" target="_blank" rel="noopener">Résumé</a>
   </div>
@@ -65,7 +83,7 @@
   <section class="hero">
     <div class="hero-inner">
       <div class="hero-copy">
-        <p class="eyebrow">AI Engineer &middot; Data Analyst &middot; Cloud Deployment</p>
+        <p class="eyebrow" data-type>AI Engineer &middot; Data Analyst &middot; Cloud Deployment</p>
         <h1 class="hero-title">Harshil Patel</h1>
         <p class="hero-sub">I turn raw data into deployed, decision‑ready AI systems — from a messy CSV to a model behind a live endpoint.</p>
         <div class="hero-cta">
@@ -101,7 +119,7 @@
       <p class="stage-lede">Every pipeline starts with a source. Mine's a Computer Engineering degree in Mumbai, a Master's in Information Systems from New York, and a growing stack of AI tooling built on top of both.</p>
 
       <div class="about-grid">
-        <p class="about-bio">
+        <p class="about-bio" data-decode>
           I'm an AI/ML engineer and recent M.S. graduate with hands-on experience across data analysis, machine learning, and AI-driven applications. My work sits at the intersection of three things: getting messy data into shape, building models that learn something useful from it, and shipping that model somewhere a real user can hit it — using tools like FastAPI, Docker, and AWS. I'm currently based in Jersey City and looking for AI Engineer roles that blend data analysis with cloud deployment.
         </p>
 
@@ -109,12 +127,12 @@
           <div class="edu-card">
             <p class="edu-degree">M.S. in Information Systems</p>
             <p class="edu-school">Pace University, New York, NY</p>
-            <p class="edu-meta">Concentration: Information Systems &middot; GPA 3.67 &middot; May 2026</p>
+            <p class="edu-meta">Concentration: Information Systems &middot; GPA <span class="count" data-to="3.67" data-dec="2">3.67</span> &middot; May 2026</p>
           </div>
           <div class="edu-card">
             <p class="edu-degree">B.E. in Computer Engineering</p>
             <p class="edu-school">Vidyavardhini's College of Engineering &amp; Technology, Mumbai</p>
-            <p class="edu-meta">CGPA 8.29 / 10.00 &middot; May 2023</p>
+            <p class="edu-meta">CGPA <span class="count" data-to="8.29" data-dec="2">8.29</span> / 10.00 &middot; May 2023</p>
           </div>
         </div>
       </div>
@@ -206,9 +224,19 @@
           <p class="project-tag">Data Pipeline &middot; Python</p>
           <h3 class="project-title">NBA Data Scraping &amp; Statistical Analysis</h3>
           <p class="project-desc">An automated scraping pipeline pulling real-time NBA statistics, processed into 18+ visualizations covering performance trends and season insights.</p>
+          <svg class="mini-chart chart-bars" viewBox="0 0 120 44" aria-hidden="true">
+            <line class="chart-axis" x1="0" y1="43" x2="120" y2="43"/>
+            <rect x="4"   y="18" width="12" height="25" rx="2" style="--i:0"/>
+            <rect x="21"  y="10" width="12" height="33" rx="2" style="--i:1"/>
+            <rect x="38"  y="22" width="12" height="21" rx="2" style="--i:2"/>
+            <rect x="55"  y="4"  width="12" height="39" rx="2" style="--i:3" class="hi"/>
+            <rect x="72"  y="14" width="12" height="29" rx="2" style="--i:4"/>
+            <rect x="89"  y="20" width="12" height="23" rx="2" style="--i:5"/>
+            <rect x="106" y="26" width="12" height="17" rx="2" style="--i:6"/>
+          </svg>
           <ul class="project-stats">
-            <li><strong>18+</strong> visualizations</li>
-            <li><strong>80%</strong> less redundancy</li>
+            <li><strong><span class="count" data-to="18">18</span>+</strong> visualizations</li>
+            <li><strong><span class="count" data-to="80">80</span>%</strong> less redundancy</li>
             <li><strong>&lt;30s</strong> runtime</li>
           </ul>
           <div class="chip-row">
@@ -226,6 +254,12 @@
           <p class="project-tag">Dashboard &middot; Tableau</p>
           <h3 class="project-title">Electric Vehicle Market Analysis</h3>
           <p class="project-desc">An interactive Tableau dashboard analyzing EV adoption across the U.S. — growth trends, state-wise adoption maps, and BEV vs. PHEV distribution.</p>
+          <svg class="mini-chart chart-line" viewBox="0 0 120 44" aria-hidden="true">
+            <line class="chart-axis" x1="0" y1="43" x2="120" y2="43"/>
+            <path class="line-area" d="M2 40 L20 37 L38 35 L56 30 L74 24 L92 15 L118 5 L118 43 L2 43 Z"/>
+            <path class="line-path" pathLength="100" d="M2 40 L20 37 L38 35 L56 30 L74 24 L92 15 L118 5"/>
+            <circle class="line-dot" cx="118" cy="5" r="3"/>
+          </svg>
           <ul class="project-stats">
             <li><strong>KPI</strong> tracking</li>
             <li><strong>State</strong>-level maps</li>
@@ -245,6 +279,17 @@
           <p class="project-tag">Search Algorithms &middot; Python</p>
           <h3 class="project-title">AI Puzzle Solver — Sokoban</h3>
           <p class="project-desc">A puzzle-solving system using Depth-First Search to find valid solution paths, with an intelligent hint mechanism layered on top for gameplay assistance.</p>
+          <svg class="mini-chart chart-path" viewBox="0 0 120 44" aria-hidden="true">
+            <g class="grid-dots">
+              <circle cx="10" cy="7"/><circle cx="35" cy="7"/><circle cx="60" cy="7"/><circle cx="85" cy="7"/><circle cx="110" cy="7"/>
+              <circle cx="10" cy="22"/><circle cx="35" cy="22"/><circle cx="60" cy="22"/><circle cx="85" cy="22"/><circle cx="110" cy="22"/>
+              <circle cx="10" cy="37"/><circle cx="35" cy="37"/><circle cx="60" cy="37"/><circle cx="85" cy="37"/><circle cx="110" cy="37"/>
+            </g>
+            <path class="dfs-dead" pathLength="100" d="M35 37 L35 22 L35 7"/>
+            <path class="dfs-path" pathLength="100" d="M10 37 L35 37 L60 37 L60 22 L85 22 L85 7 L110 7"/>
+            <rect class="dfs-goal" x="105" y="2" width="10" height="10" rx="2"/>
+            <circle class="dfs-start" cx="10" cy="37" r="4"/>
+          </svg>
           <div class="chip-row">
             <span class="chip chip-sm">DFS</span>
             <span class="chip chip-sm">Search Algorithms</span>
@@ -276,50 +321,57 @@
       <h2 class="stage-title">What's in the pipeline</h2>
       <p class="stage-lede">The tools I reach for at each step, from raw data to a deployed endpoint.</p>
 
+      <div class="skill-filter" role="group" aria-label="Filter skills">
+        <button type="button" class="filter-btn is-on" data-filter="all" aria-pressed="true">All</button>
+        <button type="button" class="filter-btn" data-filter="ai" aria-pressed="false">AI &amp; ML</button>
+        <button type="button" class="filter-btn" data-filter="data" aria-pressed="false">Data</button>
+        <button type="button" class="filter-btn" data-filter="cloud" aria-pressed="false">Cloud &amp; Dev</button>
+      </div>
+
       <div class="skill-grid">
-        <div class="skill-card">
+        <div class="skill-card" data-group="ai">
           <p class="skill-cat">Machine Learning &amp; AI</p>
           <div class="chip-row">
             <span class="chip">Scikit-learn</span><span class="chip">XGBoost</span><span class="chip">TensorFlow</span><span class="chip">PyTorch</span><span class="chip">CNN / RNN</span><span class="chip">NLP</span>
           </div>
         </div>
-        <div class="skill-card">
+        <div class="skill-card" data-group="ai">
           <p class="skill-cat">Generative AI &amp; LLM Tools</p>
           <div class="chip-row">
             <span class="chip">LangChain</span><span class="chip">RAG</span><span class="chip">Prompt Engineering</span><span class="chip">FAISS</span><span class="chip">OpenAI API</span>
           </div>
         </div>
-        <div class="skill-card">
+        <div class="skill-card" data-group="data">
           <p class="skill-cat">Data Processing &amp; Analytics</p>
           <div class="chip-row">
             <span class="chip">Pandas</span><span class="chip">NumPy</span><span class="chip">BeautifulSoup</span><span class="chip">EDA</span><span class="chip">Statistical Analysis</span>
           </div>
         </div>
-        <div class="skill-card">
+        <div class="skill-card" data-group="data">
           <p class="skill-cat">Data Visualization</p>
           <div class="chip-row">
             <span class="chip">Power BI</span><span class="chip">Tableau</span><span class="chip">Matplotlib</span><span class="chip">Seaborn</span><span class="chip">Excel</span>
           </div>
         </div>
-        <div class="skill-card">
+        <div class="skill-card" data-group="cloud">
           <p class="skill-cat">Cloud &amp; Deployment</p>
           <div class="chip-row">
             <span class="chip">AWS (EC2, S3)</span><span class="chip">FastAPI</span><span class="chip">Docker</span><span class="chip">REST APIs</span><span class="chip">Azure</span>
           </div>
         </div>
-        <div class="skill-card">
+        <div class="skill-card" data-group="data">
           <p class="skill-cat">Databases</p>
           <div class="chip-row">
             <span class="chip">MySQL</span><span class="chip">PostgreSQL</span><span class="chip">MongoDB</span><span class="chip">Query Optimization</span>
           </div>
         </div>
-        <div class="skill-card">
+        <div class="skill-card" data-group="cloud">
           <p class="skill-cat">Programming</p>
           <div class="chip-row">
             <span class="chip">Python</span><span class="chip">Java</span><span class="chip">C++</span><span class="chip">JavaScript</span><span class="chip">OOP</span><span class="chip">DSA</span>
           </div>
         </div>
-        <div class="skill-card">
+        <div class="skill-card" data-group="cloud">
           <p class="skill-cat">Tools</p>
           <div class="chip-row">
             <span class="chip">Git</span><span class="chip">Jira</span><span class="chip">Trello</span><span class="chip">VS Code</span>
@@ -354,6 +406,11 @@
       <h2 class="stage-title">Ship it — let's talk</h2>
       <p class="stage-lede">Open to AI Engineer roles that blend data analysis and cloud deployment. If that's what you're hiring for, I'd like to hear from you.</p>
 
+      <div class="terminal" aria-hidden="true">
+        <div class="terminal-bar"><span></span><span></span><span></span><p>deploy.sh</p></div>
+        <pre class="terminal-body" id="terminalBody"></pre>
+      </div>
+
       <div class="deploy-grid">
         <a class="deploy-card" href="mailto:harshilpatel.co@gmail.com">
           <svg class="icon"><use href="#i-mail"/></svg>
@@ -379,7 +436,9 @@
 
       <div class="deploy-resumes">
         <a href="assets/resume/Harshil_Patel_Resume.pdf" download class="btn btn-solid"><svg class="icon"><use href="#i-download"/></svg>Download résumé</a>
+        <button type="button" class="btn btn-outline" id="copyEmail" data-email="harshilpatel.co@gmail.com"><svg class="icon"><use href="#i-copy"/></svg><span>Copy email</span></button>
       </div>
+      <div class="toast" id="toast" role="status" aria-live="polite"></div>
     </div>
   </section>
 
