@@ -260,6 +260,12 @@
         root.style.setProperty("--vt-y", y + "px");
         root.style.setProperty("--vt-R", Math.ceil(R) + "px");
 
+        // Clear any ring layer left from a quick previous switch: two elements
+        // with the same view-transition-name would abort the transition
+        Array.prototype.forEach.call(document.querySelectorAll(".ripple-layer"), function (el) {
+          el.remove();
+        });
+
         root.classList.add("theme-switching");
         var layer;
         var vt = document.startViewTransition(function () {
@@ -278,8 +284,12 @@
         var finish = function () {
           root.classList.remove("theme-switching");
           switching = false;
-          // Let the echo ring finish fading, then clean up
-          setTimeout(function () { if (layer) layer.remove(); }, 250);
+          // Release the transition name now, let the echo ring finish fading, then clean up
+          if (layer) {
+            layer.style.viewTransitionName = "none";
+            var oldLayer = layer;
+            setTimeout(function () { oldLayer.remove(); }, 250);
+          }
         };
         vt.finished.then(finish, finish);
       } else {
