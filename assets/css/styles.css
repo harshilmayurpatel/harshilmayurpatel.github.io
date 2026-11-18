@@ -392,8 +392,21 @@ main{ padding-left: var(--rail-w); }
   width: 100%;
   aspect-ratio: 1 / 1;
   object-fit: cover;
+  /* Portrait photo in a square frame: keep the head, crop from the bottom */
+  object-position: center top;
   border-radius: 26px;
   box-shadow: 0 26px 54px rgba(26,30,43,0.16);
+  transition: transform .45s cubic-bezier(.2,.7,.2,1), box-shadow .45s ease;
+}
+.photo-frame::before{ transition: transform .45s cubic-bezier(.2,.7,.2,1); }
+
+/* Hover: photo eases back (zooms out) slightly, frame shifts out a touch */
+@media (hover: hover){
+  .photo-frame:hover img{
+    transform: scale(.95);
+    box-shadow: 0 16px 36px rgba(26,30,43,0.14);
+  }
+  .photo-frame:hover::before{ transform: translate(4px, -4px); }
 }
 
 .hero-status{ display: flex; flex-direction: column; gap: 14px; }
