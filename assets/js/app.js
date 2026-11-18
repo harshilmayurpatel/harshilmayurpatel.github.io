@@ -230,12 +230,52 @@
     themeBtn.setAttribute("aria-label", dark ? "Switch to light mode" : "Switch to dark mode");
   }
   if (themeBtn) {
-    syncThemeLabel();
-    themeBtn.addEventListener("click", function () {
-      var next = document.documentElement.getAttribute("data-theme") === "dark" ? "light" : "dark";
-      document.documentElement.setAttribute("data-theme", next);
+    var root = document.documentElement;
+    var switching = false;
+
+    var applyTheme = function (next) {
+      root.setAttribute("data-theme", next);
       try { localStorage.setItem("theme", next); } catch (e) {}
       syncThemeLabel();
+    };
+
+    syncThemeLabel();
+    themeBtn.addEventListener("click", function () {
+      if (switching) return;
+      var next = root.getAttribute("data-theme") === "dark" ? "light" : "dark";
+
+      // Twist the button (restart the animation if clicked again later)
+      themeBtn.classList.remove("twist");
+      void themeBtn.offsetWidth;
+      themeBtn.classList.add("twist");
+
+      if (reduceMotion) {
+        applyTheme(next);
+        return;
+      }
+
+      switching = true;
+      if (document.startViewTransition) {
+        // Synced top-down wipe of the whole visible page
+        root.classList.add("theme-switching");
+        var vt = document.startViewTransition(function () { applyTheme(next); });
+        var finish = function () {
+          root.classList.remove("theme-switching");
+          switching = false;
+        };
+        vt.finished.then(finish, finish);
+      } else {
+        // Older browsers: everything crossfades together
+        root.classList.add("theme-fade");
+        applyTheme(next);
+        setTimeout(function () {
+          root.classList.remove("theme-fade");
+          switching = false;
+        }, 550);
+      }
+    });
+    themeBtn.addEventListener("animationend", function () {
+      themeBtn.classList.remove("twist");
     });
   }
 
