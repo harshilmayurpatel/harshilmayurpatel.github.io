@@ -515,13 +515,23 @@
       }
     }
   }
-  // A light tick on any link or button tap on touch screens. Fired on
-  // pointerup: Chrome only counts the finger lifting as a real tap ("user
-  // activation"), and blocks vibration before that.
+  // A light tick on any tap on touch screens: buttons, links, cards, text,
+  // anywhere. Fired on pointerup, which Chrome counts as a real tap ("user
+  // activation") and allows vibration from. Scrolls and long presses don't
+  // count: the finger must stay put (<10px) and lift within 450ms.
+  var tapStart = null;
+  document.addEventListener("pointerdown", function (e) {
+    tapStart = e.pointerType === "touch" ? { x: e.clientX, y: e.clientY, t: e.timeStamp } : null;
+  }, { passive: true });
+  document.addEventListener("pointercancel", function () { tapStart = null; }, { passive: true });
   document.addEventListener("pointerup", function (e) {
-    if (e.pointerType !== "touch") return;
-    var el = e.target.closest("a, button, .chip");
-    if (el && !el.hasAttribute("data-haptic-own")) haptic("tap");
+    if (e.pointerType !== "touch" || !tapStart) return;
+    var moved = Math.abs(e.clientX - tapStart.x) + Math.abs(e.clientY - tapStart.y);
+    var quick = e.timeStamp - tapStart.t < 450;
+    tapStart = null;
+    if (moved > 10 || !quick) return;
+    var own = e.target.closest("[data-haptic-own]");
+    if (!own) haptic("tap"); // controls with their own pattern play that instead
   }, { passive: true });
 
   /* =========================================================
@@ -599,6 +609,9 @@
   // to wait for the current message instead.
   function notify(msg, opts) {
     if (!islandEl) return;
+    // The celebration card sits in the same top-center spot: a new
+    // notification means the visitor moved on, so the card steps aside
+    if (window.Celebrate && document.querySelector(".cc-wrap")) window.Celebrate.close();
     var queue = opts && opts.queue;
     if (!queue) islandQueue = [];
     islandQueue.push(msg);
@@ -917,8 +930,8 @@
     // Mic: a happy hop
     if (micBtn) setTimeout(function () { restartClass(micBtn, "cheer", 950); }, 300);
 
-    // Sparkle trail for 4 seconds
-    sparkleTrail(4000);
+    // A short sparkle trail behind the cursor / finger
+    sparkleTrail(1500);
   }
 
   /* Find what's on screen right now and give each kind of element its effect.
@@ -1088,28 +1101,4 @@
     document.addEventListener("pointermove", onMove, { passive: true });
   }
 
-  /* ---------- Cursor follower ---------- */
-  if (finePointer && !reduceMotion) {
-    var ring = document.createElement("div");
-    ring.className = "cursor-ring";
-    ring.setAttribute("aria-hidden", "true");
-    document.body.appendChild(ring);
-    var tx = 0, ty = 0, cx = 0, cy = 0, moving = false;
-    document.addEventListener("mousemove", function (e) {
-      tx = e.clientX; ty = e.clientY;
-      ring.classList.add("on");
-      if (!moving) { moving = true; requestAnimationFrame(follow); }
-    });
-    document.addEventListener("mouseleave", function () { ring.classList.remove("on"); });
-    function follow() {
-      cx += (tx - cx) * 0.22;
-      cy += (ty - cy) * 0.22;
-      ring.style.transform = "translate(" + cx.toFixed(1) + "px," + cy.toFixed(1) + "px)";
-      if (Math.abs(tx - cx) > 0.3 || Math.abs(ty - cy) > 0.3) requestAnimationFrame(follow);
-      else moving = false;
-    }
-    document.addEventListener("mouseover", function (e) {
-      ring.classList.toggle("hover", !!e.target.closest("a, button"));
-    });
-  }
 })();

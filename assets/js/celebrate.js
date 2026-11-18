@@ -182,16 +182,6 @@
     return base + " 🙂";
   }
 
-  // At night, the next sunrise is today's if it's still ahead (after midnight), else tomorrow's
-  function nextSunrise(d) {
-    return new Date(d.sunrise[0]) > new Date() ? d.sunrise[0] : (d.sunrise[1] || d.sunrise[0]);
-  }
-
-  function fmtTime(iso) {
-    var d = new Date(iso);
-    return d.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
-  }
-
   /* ---------- The card ---------- */
   var cardEl = null, remaining = 0, lastTick = 0, paused = false, loading = false, rafId = 0;
   var AUTO_MS = 12000;
@@ -205,7 +195,7 @@
     document.removeEventListener("keydown", onKey);
     el.classList.remove("show");
     el.classList.add("hide");
-    setTimeout(function () { el.remove(); }, 380);
+    setTimeout(function () { el.remove(); }, 460);
   }
   function onKey(e) { if (e.key === "Escape") close(); }
 
@@ -239,26 +229,26 @@
       } catch (e) {}
     }
 
+    // Compact notification card that drops in from the top-center
     var wrap = document.createElement("div");
     wrap.className = "cc-wrap";
     wrap.innerHTML =
-      '<div class="cc-backdrop"></div>' +
       '<section class="cc-card" role="dialog" aria-modal="false" aria-labelledby="ccTitle">' +
         '<button class="cc-close" type="button" aria-label="Close">' +
-          '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg></button>' +
-        '<div class="cc-head">' +
+          '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg></button>' +
+        '<div class="cc-top">' +
+          '<div class="cc-icon" aria-hidden="true">' + icon("loading", "wi-md") + "</div>" +
           '<div class="cc-greet">' +
             '<p class="cc-hi">' + g.hi + ' <span class="cc-wave" aria-hidden="true">👋</span></p>' +
             '<h2 class="cc-title" id="ccTitle">Thanks for visiting!</h2>' +
-            '<p class="cc-when">' + dateStr + " · " + timeStr + "</p>" +
           "</div>" +
-          '<div class="cc-icon" aria-hidden="true">' + icon("loading", "wi-lg") + "</div>" +
         "</div>" +
         '<div class="cc-weather" aria-live="polite">' +
-          '<div class="cc-loading"><span class="cc-dots"><i></i><i></i><i></i></span> <span class="cc-load-text">Checking the sky…</span></div>' +
+          '<div class="cc-loading"><span class="cc-dots"><i></i><i></i><i></i></span><span class="cc-load-text">Checking the sky…</span></div>' +
         "</div>" +
         '<p class="cc-wish"></p>' +
-        '<div class="cc-foot">' + harshilLine + '<span class="cc-src">Weather by Open-Meteo</span></div>' +
+        (harshilLine ? '<div class="cc-foot">' + harshilLine + "</div>" : "") +
+        '<p class="cc-src">Weather by Open-Meteo</p>' +
         '<div class="cc-timer" aria-hidden="true"><i></i></div>' +
       "</section>";
     document.body.appendChild(wrap);
@@ -266,7 +256,6 @@
 
     var card = wrap.querySelector(".cc-card");
     wrap.querySelector(".cc-close").addEventListener("click", close);
-    wrap.querySelector(".cc-backdrop").addEventListener("click", close);
     card.addEventListener("mouseenter", function () { paused = true; });
     card.addEventListener("mouseleave", function () { paused = false; });
     document.addEventListener("keydown", onKey);
@@ -281,50 +270,39 @@
 
     loadWeather(function () {
       var t = wrap.querySelector(".cc-load-text");
-      if (t) t.textContent = "Checking the sky… allow location for your local weather";
+      if (t) t.textContent = "Allow location for your local weather…";
     }).then(function (res) {
       if (cardEl !== wrap) return; // closed meanwhile
       loading = false;
       remaining = AUTO_MS; // full reading time from the moment the weather appears
       var box = wrap.querySelector(".cc-weather");
       if (!res || res.error || !res.wx || !res.wx.current) {
-        box.innerHTML = '<p class="cc-noweather">Couldn\'t reach the weather service right now — but thanks for stopping by!</p>';
-        wrap.querySelector(".cc-icon").innerHTML = icon(now.getHours() >= 6 && now.getHours() < 19 ? "sun" : "moon", "wi-lg");
+        box.innerHTML = '<p class="cc-noweather">Weather is unavailable right now · ' + dateStr + " · " + timeStr + "</p>";
+        wrap.querySelector(".cc-icon").innerHTML = icon(now.getHours() >= 6 && now.getHours() < 19 ? "sun" : "moon", "wi-md");
         return;
       }
       var c = res.wx.current, d = res.wx.daily;
       var desc = describe(c.weather_code, c.is_day === 1, c.wind_speed_10m);
       var T = Math.round(c.temperature_2m);
-      wrap.querySelector(".cc-icon").innerHTML = icon(desc.kind, "wi-lg");
+      wrap.querySelector(".cc-icon").innerHTML = icon(desc.kind, "wi-md");
 
-      var days = "";
-      for (var i = 1; i < Math.min(4, d.time.length); i++) {
-        var dd = describe(d.weather_code[i], true, 0);
-        var name = new Date(d.time[i] + "T12:00:00").toLocaleDateString([], { weekday: "short" });
-        days += '<div class="cc-day"><span class="cc-dname">' + name + "</span>" + icon(dd.kind, "wi-sm") +
-          '<span class="cc-dtemp"><b>' + Math.round(d.temperature_2m_max[i]) + "°</b> " + Math.round(d.temperature_2m_min[i]) + "°</span>" +
-          (d.precipitation_probability_max[i] >= 30 ? '<span class="cc-dpop">💧' + d.precipitation_probability_max[i] + "%</span>" : '<span class="cc-dpop"></span>') +
-          "</div>";
-      }
-
+      // Today only: now, condition, place + time, and four compact stats
       box.innerHTML =
         '<div class="cc-now">' +
-          '<span class="cc-temp">' + T + '<sup>' + UNIT_T + "</sup></span>" +
-          '<div class="cc-cond"><b>' + desc.label + "</b><span>" + (res.isHome ? "in Jersey City, where Harshil is" : "in " + res.place) + "</span></div>" +
+          '<span class="cc-temp">' + T + "<sup>" + UNIT_T + "</sup></span>" +
+          '<div class="cc-cond"><b>' + desc.label + "</b><span>" +
+            (res.isHome ? "Jersey City" : res.place) + " · " + timeStr + "</span></div>" +
         "</div>" +
         '<div class="cc-stats">' +
-          '<span><em>Feels like</em>' + Math.round(c.apparent_temperature) + "°</span>" +
-          '<span><em>High / Low</em>' + Math.round(d.temperature_2m_max[0]) + "° / " + Math.round(d.temperature_2m_min[0]) + "°</span>" +
-          '<span><em>Rain chance</em>' + (d.precipitation_probability_max[0] == null ? "–" : d.precipitation_probability_max[0] + "%") + "</span>" +
-          '<span><em>Wind</em>' + Math.round(c.wind_speed_10m) + " " + UNIT_W + "</span>" +
-          '<span><em>Humidity</em>' + c.relative_humidity_2m + "%</span>" +
-          '<span><em>' + (c.is_day === 1 ? "Sunset" : "Sunrise") + "</em>" + fmtTime(c.is_day === 1 ? d.sunset[0] : nextSunrise(d)) + "</span>" +
-        "</div>" +
-        '<div class="cc-forecast">' + days + "</div>";
+          "<span><em>Feels</em>" + Math.round(c.apparent_temperature) + "°</span>" +
+          "<span><em>H / L</em>" + Math.round(d.temperature_2m_max[0]) + "°/" + Math.round(d.temperature_2m_min[0]) + "°</span>" +
+          "<span><em>Rain</em>" + (d.precipitation_probability_max[0] == null ? "–" : d.precipitation_probability_max[0] + "%") + "</span>" +
+          "<span><em>Wind</em>" + Math.round(c.wind_speed_10m) + "<small>" + UNIT_W + "</small></span>" +
+        "</div>";
       wishEl.textContent = wish(desc.kind, T, g.part);
       if (res.isHome) {
         var src = wrap.querySelector(".cc-src");
-        if (src) src.textContent = "Location off · showing Jersey City · Weather by Open-Meteo";
+        if (src) src.textContent = "Location off · showing Jersey City, where Harshil is · Open-Meteo";
       }
       // Weather-themed particles across the screen
       if (opts.ambient !== false) ambient(desc.kind);
