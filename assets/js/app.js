@@ -244,11 +244,6 @@
       if (switching) return;
       var next = root.getAttribute("data-theme") === "dark" ? "light" : "dark";
 
-      // Twist the button (restart the animation if clicked again later)
-      themeBtn.classList.remove("twist");
-      void themeBtn.offsetWidth;
-      themeBtn.classList.add("twist");
-
       if (reduceMotion) {
         applyTheme(next);
         return;
@@ -296,9 +291,6 @@
           switching = false;
         }, 550);
       }
-    });
-    themeBtn.addEventListener("animationend", function () {
-      themeBtn.classList.remove("twist");
     });
   }
 

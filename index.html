@@ -58,8 +58,24 @@
   </button>
   <div class="topbar-actions">
     <button class="theme-toggle" id="themeToggle" type="button" aria-label="Switch to dark mode">
-      <svg class="icon icon-moon"><use href="#i-moon"/></svg>
-      <svg class="icon icon-sun"><use href="#i-sun"/></svg>
+      <!-- One icon that morphs: solid moon (light mode) ⇄ solid sun (dark mode) -->
+      <svg class="tt-icon" viewBox="0 0 24 24" aria-hidden="true">
+        <mask id="ttMoonCut">
+          <rect width="24" height="24" fill="#fff"/>
+          <circle class="tt-cut" cx="18.5" cy="5.5" r="7.6" fill="#000"/>
+        </mask>
+        <circle class="tt-core" cx="12" cy="12" r="8.6" fill="currentColor" mask="url(#ttMoonCut)"/>
+        <g class="tt-rays" stroke="currentColor" stroke-width="2.1" stroke-linecap="round">
+          <line x1="12" y1="2.6" x2="12" y2="4.2"/>
+          <line x1="12" y1="19.8" x2="12" y2="21.4"/>
+          <line x1="2.6" y1="12" x2="4.2" y2="12"/>
+          <line x1="19.8" y1="12" x2="21.4" y2="12"/>
+          <line x1="5.35" y1="5.35" x2="6.5" y2="6.5"/>
+          <line x1="17.5" y1="17.5" x2="18.65" y2="18.65"/>
+          <line x1="5.35" y1="18.65" x2="6.5" y2="17.5"/>
+          <line x1="17.5" y1="6.5" x2="18.65" y2="5.35"/>
+        </g>
+      </svg>
     </button>
     <a class="btn btn-ghost" href="mailto:harshilpatel.co@gmail.com">Email me</a>
     <a class="btn btn-solid topbar-resume" href="assets/resume/Harshil_Patel_Resume.pdf" target="_blank" rel="noopener">Résumé</a>
