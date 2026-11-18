@@ -241,7 +241,8 @@ ul{ margin:0; padding:0; list-style:none; }
   .menu-btn{ display: flex; }
 }
 @media (max-width: 520px){
-  .topbar-actions .resume-dropdown{ display:none; }
+  .topbar-actions .resume-dropdown,
+  .topbar-actions .topbar-resume{ display:none; }
 }
 
 .mobile-nav{

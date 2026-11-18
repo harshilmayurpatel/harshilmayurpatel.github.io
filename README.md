@@ -9,8 +9,9 @@ Structure
 │   ├── js/app.js
 │   ├── images/headshot-sticker.png
 │   └── resume/
-│       ├── Harshil_Patel_Resume_AI_Engineer.pdf
-│       └── Harshil_Patel_Resume_General.pdf
+│       └── Harshil_Patel_Resume.pdf
+
+Live site: https://harshilmayurpatel.github.io/
 Running it
 
 Just open index.html in a browser, or use the VS Code "Live Server" extension for auto-reload.
