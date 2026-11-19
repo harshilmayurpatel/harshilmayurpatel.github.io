@@ -65,6 +65,7 @@
   function tryMove(d, fromAI) {
     if (screen !== "play" || G.won) return;
     if (!fromAI && auto) { stopAuto(); status("AI PLAYBACK STOPPED", ""); }
+    settle();
     if (anim) { if (queue.length < 2) queue.push(d); return; }
 
     var x = cellX(G.player) + DV[d][0], y = cellY(G.player) + DV[d][1];
@@ -86,6 +87,7 @@
     if (G.history.length > 2000) G.history.shift();
 
     anim = { t0: performance.now(), pFrom: G.player, pTo: t, bi: bi, bFrom: bFrom, bTo: bTo };
+    setTimeout(settle, MOVE_MS + 5);
     G.player = t;
     G.moves++;
     var ch = DCH[d];
@@ -109,6 +111,12 @@
   }
 
   function bump() { sfx("bump"); }
+
+  // Finish the current step once its tween time has passed. Driven by a timer as well as
+  // the render loop, so game logic keeps going even when animation frames are throttled.
+  function settle() {
+    if (anim && performance.now() - anim.t0 >= MOVE_MS) afterAnim();
+  }
 
   function afterAnim() {
     anim = null;
@@ -208,6 +216,7 @@
       $("btn-solve").classList.add("on");
       auto = setInterval(function () {
         if (!solution || solution.ptr >= solution.moves.length || G.won) return stopAuto();
+        settle();
         if (anim) return;
         tryMove(DIR[solution.moves[solution.ptr].toLowerCase()], true);
       }, AUTO_MS);
@@ -571,7 +580,7 @@
         break;
     }
   }
-  function vibrate(ms) { try { if (navigator.vibrate) navigator.vibrate(ms); } catch (e) {} }
+  function vibrate(ms) { try { var ua = navigator.userActivation; if (navigator.vibrate && (!ua || ua.hasBeenActive)) navigator.vibrate(ms); } catch (e) {} }
   function setMute(m) {
     store.muted = m; save();
     $("btn-sound").textContent = m ? "SND:OFF" : "SND:ON";
