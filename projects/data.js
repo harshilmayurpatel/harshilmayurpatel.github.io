@@ -22,13 +22,13 @@ window.PROJECTS = [
       how: [
         "My resume and project notes are curated into Markdown, split one chunk per section, embedded locally with FastEmbed (bge-small) and indexed in FAISS.",
         "Each question retrieves the top 4 chunks; Llama 3.3 70B on Groq answers only from them and says \"I don't know\" otherwise.",
-        "Answers stream word by word over Server-Sent Events from a FastAPI app packaged in Docker for Hugging Face Spaces.",
+        "Answers stream word by word over Server-Sent Events from a FastAPI app packaged in Docker and hosted on Render.",
         "Safeguards: CORS limited to this site, per-visitor rate limits, length caps, a prompt-injection guard, and an offline fallback that returns the best-matching facts."
       ],
       results: [
         "19 of 19 retrieval test questions find the right section of my notes.",
         "The intent model can only choose from a fixed list of site actions, validated on the server.",
-        "Runs entirely on free tiers: local embeddings, Groq's free API, and Hugging Face Spaces."
+        "Runs entirely on free tiers: local embeddings, Groq's free API, and Render's free web service."
       ],
       role: "Solo project: knowledge base, retrieval pipeline, API, evaluation, Docker deployment and the chat UI on this site."
     },

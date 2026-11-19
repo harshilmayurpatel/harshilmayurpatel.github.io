@@ -7,8 +7,8 @@
 
   var script = document.currentScript;
   var LOCAL = /^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname);
-  // The deployed Hugging Face Space URL lives on the script tag (data-api).
-  // Until it's set, the feature stays hidden on the live site.
+  // The deployed API URL (Render) lives on the script tag (data-api).
+  // Until it is set, the feature stays hidden on the live site.
   var API = LOCAL ? "http://localhost:7860" : (script && script.getAttribute("data-api")) || "";
   var MAX_LEN = 400;
   var SUGGEST = [
@@ -105,7 +105,7 @@
     if (health === "online" || health === "waking") return;
     setStatus("waking", "Connecting…");
     var slow = setTimeout(function () {
-      if (health === "waking") setStatus("waking", "Waking up the AI · about 30s");
+      if (health === "waking") setStatus("waking", "Waking up the AI · up to a minute");
     }, 1800);
     var t0 = Date.now();
     (function attempt() {
@@ -115,8 +115,8 @@
           setStatus("online", j.model ? "Online" : "Online · limited mode");
         })
         .catch(function () {
-          // A sleeping Space answers with errors while it boots: keep trying for ~90s
-          if (Date.now() - t0 < 90000) setTimeout(attempt, 3000);
+          // The free server sleeps when idle and errors while it boots: keep trying for ~2.5 min
+          if (Date.now() - t0 < 150000) setTimeout(attempt, 3000);
           else { clearTimeout(slow); setStatus("offline", "Offline right now"); }
         });
     })();
@@ -144,7 +144,7 @@
 
     var answer = "";
     ctrl = window.AbortController ? new AbortController() : null;
-    var timeout = setTimeout(function () { if (ctrl) ctrl.abort(); }, 100000);
+    var timeout = setTimeout(function () { if (ctrl) ctrl.abort(); }, 150000);
 
     fetch(API + "/chat", {
       method: "POST",
