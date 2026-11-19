@@ -100,28 +100,28 @@ window.PROJECTS = [
   {
     slug: "sokoban",
     title: "AI Puzzle Solver: Sokoban",
-    tagline: "A retro Sokoban game with a built-in solver. Watch DFS, BFS or A* solve the level, or ask for a hint.",
+    tagline: "A retro Sokoban game with a built-in solver. Watch A*, BFS or DFS solve the level, or ask for a hint.",
     category: "web",
-    tags: ["JavaScript", "DFS", "BFS", "A*", "Search Algorithms"],
+    tags: ["JavaScript", "A*", "BFS", "DFS", "Search Algorithms", "Web Workers"],
     badges: ["featured", "live"],
     preview: "path",
     links: {
       demo: "https://harshilmayurpatel.github.io/Sokoban-AI-Solver/",
       code: "https://github.com/harshilmayurpatel/Sokoban-AI-Solver"
     },
-    stats: [["3", "search algorithms"], ["▶", "playable in browser"]],
+    stats: [["3", "search algorithms"], ["12", "levels, all verified solvable"]],
     caseStudy: {
       problem: "Sokoban puzzles explode combinatorially: a few boxes create thousands of reachable states, and one wrong push can make a level unsolvable.",
       built: "A browser Sokoban game with an AI solver that powers a hint button and a watch-the-AI-solve mode.",
       how: [
-        "Each game state (player position plus box positions) is a node in a search graph.",
-        "Depth-First Search finds valid solution paths, with Breadth-First Search and A* available for comparison.",
+        "Each node in the search graph is a push state: the crate positions plus the area the player can reach, so walking moves collapse into one node.",
+        "A* (the default) finds short solutions while exploring few states; Breadth-First Search finds the fewest pushes; Depth-First Search finds a valid path fast.",
         "Deadlock pruning skips states where a box can never reach a goal, such as a box pushed into a corner.",
-        "The hint system runs the solver from the current position and suggests the next move."
+        "The solver runs in a Web Worker, so the game never freezes; the hint button runs it from the current position and shows the next push."
       ],
       results: [
         "Playable in the browser on desktop and mobile.",
-        "Shows how search strategy changes speed and path length on the same puzzle."
+        "Shows how search strategy changes speed and path length on the same puzzle: A* solves the hardest level in 18 pushes after exploring about 700 states."
       ],
       role: "Solo project: game, level design, solver and hint system."
     },

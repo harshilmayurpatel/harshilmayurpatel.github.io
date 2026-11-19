@@ -58,6 +58,7 @@
   <symbol id="i-moon" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/></symbol>
   <symbol id="i-copy" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/></g></symbol>
   <symbol id="i-download" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" d="M12 3v12m0 0l-4-4m4 4l4-4M4 19h16"/></symbol>
+  <symbol id="i-play" viewBox="0 0 24 24"><path fill="currentColor" d="M8 5.5v13a.8.8 0 0 0 1.2.7l10.4-6.5a.8.8 0 0 0 0-1.4L9.2 4.8A.8.8 0 0 0 8 5.5z"/></symbol>
 </svg>
 
 
@@ -296,9 +297,47 @@
     <div class="stage-inner">
       <p class="stage-eyebrow">Stage 03 — Build</p>
       <h2 class="stage-title">What comes out the other end</h2>
-      <p class="stage-lede">A sample of things I've shipped — scraping pipelines, dashboards, and a couple of AI side quests.</p>
+      <p class="stage-lede">A sample of things I've shipped — a RAG assistant, a scraping pipeline, a dashboard, and an AI puzzle solver.</p>
 
       <div class="project-grid">
+        <article class="project-card project-card-featured project-card-wide">
+          <div class="wide-copy">
+            <p class="project-tag">RAG &middot; LLM &middot; FastAPI</p>
+            <h3 class="project-title">Ask my AI</h3>
+            <p class="project-desc">A retrieval-augmented assistant that answers questions about my work, live on this site. It also powers the voice mic, turning free-form sentences into site actions.</p>
+            <ul class="project-stats">
+              <li><strong><span class="count" data-to="19">19</span>/19</strong> retrieval checks</li>
+              <li><strong>2</strong> AI endpoints</li>
+              <li><strong>$0</strong> to run</li>
+            </ul>
+            <div class="chip-row">
+              <span class="chip chip-sm">LangChain</span>
+              <span class="chip chip-sm">FAISS</span>
+              <span class="chip chip-sm">GPT-OSS 120B</span>
+              <span class="chip chip-sm">Docker</span>
+            </div>
+            <div class="project-footer">
+              <button class="project-link project-link-solid" type="button" data-open-ai hidden><svg class="icon"><use href="#i-play"/></svg>Try it</button>
+              <a class="project-link" href="https://github.com/harshilmayurpatel/ask-my-ai" target="_blank" rel="noopener"><svg class="icon"><use href="#i-github"/></svg>View on GitHub</a>
+            </div>
+          </div>
+          <svg class="mini-chart chart-chat" viewBox="0 0 240 104" aria-hidden="true">
+            <g class="cb cb-q" style="--i:0">
+              <rect x="112" y="4" width="124" height="24" rx="12"/>
+              <path class="cb-text" pathLength="100" d="M126 16 H220"/>
+            </g>
+            <g class="cb cb-a" style="--i:1">
+              <rect x="4" y="38" width="176" height="38" rx="13"/>
+              <path class="cb-text" pathLength="100" d="M18 51 H164 M18 63 H124"/>
+            </g>
+            <g class="cb-typing">
+              <circle cx="16" cy="94" r="3.2" style="--d:0s"/>
+              <circle cx="27" cy="94" r="3.2" style="--d:.18s"/>
+              <circle cx="38" cy="94" r="3.2" style="--d:.36s"/>
+            </g>
+          </svg>
+        </article>
+
         <article class="project-card project-card-featured">
           <p class="project-tag">Data Pipeline &middot; Python</p>
           <h3 class="project-title">NBA Data Scraping &amp; Statistical Analysis</h3>
@@ -325,7 +364,8 @@
             <span class="chip chip-sm">Seaborn</span>
           </div>
           <div class="project-footer">
-            <a class="project-link" href="https://github.com/harshilmayurpatel/nba-stats-scraper" target="_blank" rel="noopener"><svg class="icon"><use href="#i-github"/></svg>View on GitHub</a>
+            <a class="project-link" href="https://data-scrapping-aonbno2rm9z9adkfkvaxwy.streamlit.app/" target="_blank" rel="noopener"><svg class="icon"><use href="#i-play"/></svg>Live app</a>
+            <a class="project-link" href="https://github.com/harshilmayurpatel/nba-stats-scraper" target="_blank" rel="noopener"><svg class="icon"><use href="#i-github"/></svg>GitHub</a>
           </div>
         </article>
 
@@ -350,14 +390,15 @@
             <span class="chip chip-sm">Data Cleaning</span>
           </div>
           <div class="project-footer">
-            <a class="project-link" href="https://github.com/harshilmayurpatel/Electric-Vehicle-Data-Analysis" target="_blank" rel="noopener"><svg class="icon"><use href="#i-github"/></svg>View on GitHub</a>
+            <a class="project-link" href="https://public.tableau.com/app/profile/harshil.patel1403/viz/ElectricVehicleDataAnalysis_17743671212720/Dashboard1" target="_blank" rel="noopener"><svg class="icon"><use href="#i-play"/></svg>Dashboard</a>
+            <a class="project-link" href="https://github.com/harshilmayurpatel/Electric-Vehicle-Data-Analysis" target="_blank" rel="noopener"><svg class="icon"><use href="#i-github"/></svg>GitHub</a>
           </div>
         </article>
 
         <article class="project-card project-card-featured">
           <p class="project-tag">Search Algorithms &middot; JavaScript</p>
           <h3 class="project-title">AI Puzzle Solver — Sokoban</h3>
-          <p class="project-desc">A retro Sokoban game with a built-in solver: Depth-First Search (plus BFS and A*) explores the puzzle's state space with deadlock pruning, powering an intelligent hint mechanism and a watch-the-AI-solve mode.</p>
+          <p class="project-desc">A retro Sokoban game with a built-in AI solver: A*, Breadth-First or Depth-First Search explores the puzzle's state space with deadlock pruning, powering a hint button and a watch-the-AI-solve mode.</p>
           <svg class="mini-chart chart-path" viewBox="0 0 120 44" aria-hidden="true">
             <g class="grid-dots">
               <circle cx="10" cy="7"/><circle cx="35" cy="7"/><circle cx="60" cy="7"/><circle cx="85" cy="7"/><circle cx="110" cy="7"/>
@@ -370,12 +411,13 @@
             <circle class="dfs-start" cx="10" cy="37" r="4"/>
           </svg>
           <div class="chip-row">
-            <span class="chip chip-sm">DFS</span>
-            <span class="chip chip-sm">Search Algorithms</span>
+            <span class="chip chip-sm">A*</span>
+            <span class="chip chip-sm">BFS / DFS</span>
             <span class="chip chip-sm">JavaScript</span>
           </div>
           <div class="project-footer">
-            <a class="project-link" href="https://github.com/harshilmayurpatel/Sokoban-AI-Solver" target="_blank" rel="noopener"><svg class="icon"><use href="#i-github"/></svg>View on GitHub</a>
+            <a class="project-link" href="https://harshilmayurpatel.github.io/Sokoban-AI-Solver/" target="_blank" rel="noopener"><svg class="icon"><use href="#i-play"/></svg>Play</a>
+            <a class="project-link" href="https://github.com/harshilmayurpatel/Sokoban-AI-Solver" target="_blank" rel="noopener"><svg class="icon"><use href="#i-github"/></svg>GitHub</a>
           </div>
         </article>
       </div>

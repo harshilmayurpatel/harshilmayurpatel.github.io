@@ -689,6 +689,18 @@ main{ padding-left: var(--rail-w); }
 }
 @media (max-width: 900px){ .project-grid{ grid-template-columns: 1fr; } }
 
+/* Wide featured card (Ask my AI): copy on the left, chat preview on the right */
+.project-card.project-card-wide{ grid-column: 1 / -1; display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); gap: 32px; align-items: center; }
+.wide-copy{ display: flex; flex-direction: column; gap: 14px; }
+.project-card-wide .chart-chat{ height: auto; max-height: 150px; }
+@media (max-width: 900px){
+  .project-card.project-card-wide{ grid-template-columns: 1fr; gap: 18px; }
+  .project-card-wide .chart-chat{ order: -1; max-height: 110px; }
+}
+.project-link.project-link-solid{ background: var(--accent); border-color: var(--accent); color: #fff; cursor: pointer; }
+.project-link.project-link-solid:hover{ color: #fff; filter: brightness(1.08); }
+:root[data-theme="dark"] .project-link.project-link-solid{ color: #0E1119; }
+
 .project-card{
   background: var(--surface);
   border: 1px solid var(--line);
@@ -1121,6 +1133,25 @@ main{ padding-left: var(--rail-w); }
 @keyframes dfsDead{ to{ opacity: .7; } }
 @keyframes goalHit{ 0%,100%{ fill: transparent; transform: none; } 50%{ fill: var(--accent-tint); transform: scale(1.22); } }
 @keyframes startPing{ 0%,100%{ transform: scale(1); } 15%{ transform: scale(1.4); } 35%{ transform: scale(1); } }
+
+/* Chat preview: bubbles pop in and their text writes, then the
+   assistant keeps "typing" (three dots) as the idle loop */
+.chart-chat .cb{ opacity: 0; transform-box: fill-box; transform-origin: center; }
+.chart-chat .cb-q{ transform-origin: right center; }
+.chart-chat .cb-a{ transform-origin: left center; }
+.chart-chat .cb-q rect{ fill: var(--accent); }
+.chart-chat .cb-a rect{ fill: var(--accent-tint); stroke: var(--line-strong); stroke-width: 1; }
+.chart-chat .cb-text{ fill: none; stroke-width: 3.2; stroke-linecap: round; stroke-dasharray: 100; stroke-dashoffset: 100; }
+.chart-chat .cb-q .cb-text{ stroke: rgba(255,255,255,.75); }
+:root[data-theme="dark"] .chart-chat .cb-q .cb-text{ stroke: rgba(14,17,25,.6); }
+.chart-chat .cb-a .cb-text{ stroke: var(--accent-light); }
+.chart-chat .cb-typing circle{ fill: var(--accent-light); opacity: 0; transform-box: fill-box; transform-origin: center; }
+.project-card.in .chart-chat .cb{ animation: bubbleIn .5s cubic-bezier(.3,1.4,.45,1) forwards; animation-delay: calc(.15s + var(--i) * .7s); }
+.project-card.in .chart-chat .cb-q .cb-text{ animation: chartDraw .5s ease .45s forwards; }
+.project-card.in .chart-chat .cb-a .cb-text{ animation: chartDraw 1.1s ease 1.15s forwards; }
+.project-card.in .chart-chat .cb-typing circle{ animation: chartFade .3s ease 2.3s forwards, typingDot 1.2s ease-in-out calc(2.4s + var(--d)) infinite; }
+@keyframes bubbleIn{ from{ opacity: 0; transform: scale(.6); } to{ opacity: 1; transform: none; } }
+@keyframes typingDot{ 0%,60%,100%{ transform: translateY(0); opacity: .45; } 30%{ transform: translateY(-4px); opacity: 1; } }
 
 /* Card: soft spotlight that follows the cursor */
 .project-card{ position: relative; overflow: hidden; }

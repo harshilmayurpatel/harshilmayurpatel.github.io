@@ -259,4 +259,10 @@
   function isOpen() { return !!(panel && panel.classList.contains("open")); }
 
   window.AskAI = { available: true, open: open, close: close, intent: intent, isOpen: isOpen };
+
+  // "Try it" buttons elsewhere on the page (e.g. the Ask my AI project card)
+  Array.prototype.forEach.call(document.querySelectorAll("[data-open-ai]"), function (btn) {
+    btn.hidden = false;
+    btn.addEventListener("click", function () { open(); });
+  });
 })();
