@@ -43,7 +43,7 @@ window.PROJECTS = [
     badges: ["featured"],
     preview: "bars",
     links: {
-      code: "https://github.com/harshilmayurpatel/Data-Scrapping"
+      code: "https://github.com/harshilmayurpatel/nba-stats-scraper"
     },
     stats: [["18+", "visualizations"], ["80%", "less redundancy"], ["<30s", "runtime"]],
     caseStudy: {
