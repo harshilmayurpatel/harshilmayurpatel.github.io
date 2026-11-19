@@ -6,8 +6,7 @@
 <title>Harshil Patel — AI Engineer</title>
 <meta name="description" content="Harshil Patel — AI Engineer, Data Analyst &amp; Cloud Deployment. Portfolio, projects, and resume." />
 <link rel="canonical" href="https://harshilmayurpatel.github.io/" />
-<meta name="theme-color" content="#F6F7FB" media="(prefers-color-scheme: light)" />
-<meta name="theme-color" content="#0E1119" media="(prefers-color-scheme: dark)" />
+<meta name="theme-color" content="#F6F7FB" />
 
 <!-- Icons -->
 <link rel="icon" href="assets/icons/favicon.svg" type="image/svg+xml" />
@@ -35,13 +34,13 @@
 
 <link rel="stylesheet" href="assets/css/styles.css" />
 <script>
-  /* Apply saved/system theme before first paint to avoid a flash */
+  /* Set the theme before first paint to avoid a flash */
   (function () {
+    /* Every visit opens in light mode. Switching to dark lasts for this
+       visit only (sessionStorage: home and projects pages in this tab). */
     var t = null;
-    try { t = localStorage.getItem("theme"); } catch (e) {}
-    if (t !== "light" && t !== "dark") {
-      t = window.matchMedia && matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
-    }
+    try { t = sessionStorage.getItem("theme"); } catch (e) {}
+    if (t !== "dark") t = "light";
     document.documentElement.setAttribute("data-theme", t);
   })();
 </script>

@@ -249,11 +249,17 @@
     var root = document.documentElement;
     var switching = false;
 
+    var themeMeta = document.querySelector('meta[name="theme-color"]');
     var applyTheme = function (next) {
       root.setAttribute("data-theme", next);
-      try { localStorage.setItem("theme", next); } catch (e) {}
+      // This visit only: the next visit opens in light mode again
+      try { sessionStorage.setItem("theme", next); } catch (e) {}
+      if (themeMeta) themeMeta.setAttribute("content", next === "dark" ? "#0E1119" : "#F6F7FB");
       syncThemeLabel();
     };
+    // Old builds remembered the theme forever; clear that so it can't linger
+    try { localStorage.removeItem("theme"); } catch (e) {}
+    if (themeMeta && root.getAttribute("data-theme") === "dark") themeMeta.setAttribute("content", "#0E1119");
 
     syncThemeLabel();
     themeBtn.setAttribute("data-haptic-own", "");
