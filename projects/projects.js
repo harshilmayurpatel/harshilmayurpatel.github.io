@@ -191,15 +191,8 @@
   });
   apply();
 
-  // Previews animate in as cards scroll into view
-  if ("IntersectionObserver" in window && !reduceMotion) {
-    var io = new IntersectionObserver(function (entries) {
-      entries.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add("in"); io.unobserve(e.target); } });
-    }, { threshold: 0.25 });
-    Array.prototype.forEach.call(grid.children, function (c) { io.observe(c); });
-  } else {
-    Array.prototype.forEach.call(grid.children, function (c) { c.classList.add("in"); });
-  }
+  // Every preview runs from page load and loops forever (CSS keyframes)
+  Array.prototype.forEach.call(grid.children, function (c) { c.classList.add("in"); });
 
   /* ---------- Case-study panel ---------- */
   var lastFocus = null, openSlug = null;
