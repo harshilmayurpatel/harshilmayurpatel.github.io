@@ -78,7 +78,7 @@
         '<input class="ai-input" type="text" maxlength="' + MAX_LEN + '" placeholder="Ask about Harshil…" aria-label="Your question" enterkeyhint="send" />' +
         '<button class="ai-send" type="submit" aria-label="Send"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h13M13 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>' +
       "</form>" +
-      '<p class="ai-note">Answers come from Harshil\'s resume and notes · Llama 3.3 · can make mistakes</p>';
+      '<p class="ai-note">Answers come from Harshil\'s resume and notes · GPT-OSS on Groq · can make mistakes</p>';
     document.body.appendChild(panel);
 
     log = panel.querySelector(".ai-log");

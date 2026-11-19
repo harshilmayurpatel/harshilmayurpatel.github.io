@@ -9,7 +9,7 @@ window.PROJECTS = [
     title: "Ask my AI",
     tagline: "A RAG assistant on this site that answers recruiters' questions about me, and lets the voice mic understand free-form sentences.",
     category: "ai",
-    tags: ["LangChain", "FAISS", "FastAPI", "Llama 3.3", "Docker", "RAG"],
+    tags: ["LangChain", "FAISS", "FastAPI", "GPT-OSS", "Docker", "RAG"],
     badges: ["new", "featured"],
     preview: "chat",
     links: {
@@ -21,7 +21,7 @@ window.PROJECTS = [
       built: "A retrieval-augmented generation (RAG) service with two endpoints: /chat streams grounded answers about my background, and /intent maps spoken sentences like \"can you make it darker\" to site actions.",
       how: [
         "My resume and project notes are curated into Markdown, split one chunk per section, embedded locally with FastEmbed (bge-small) and indexed in FAISS.",
-        "Each question retrieves the top 4 chunks; Llama 3.3 70B on Groq answers only from them and says \"I don't know\" otherwise.",
+        "Each question retrieves the top 4 chunks; GPT-OSS 120B on Groq answers only from them and says \"I don't know\" otherwise.",
         "Answers stream word by word over Server-Sent Events from a FastAPI app packaged in Docker and hosted on Render.",
         "Safeguards: CORS limited to this site, per-visitor rate limits, length caps, a prompt-injection guard, and an offline fallback that returns the best-matching facts."
       ],
