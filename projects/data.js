@@ -102,8 +102,8 @@ window.PROJECTS = [
     badges: ["featured", "live"],
     preview: "path",
     links: {
-      demo: "sokoban/",
-      code: "https://github.com/harshilmayurpatel/harshilmayurpatel.github.io/tree/main/projects/sokoban"
+      demo: "https://harshilmayurpatel.github.io/Sokoban-AI-Solver/",
+      code: "https://github.com/harshilmayurpatel/Sokoban-AI-Solver"
     },
     stats: [["3", "search algorithms"], ["▶", "playable in browser"]],
     caseStudy: {

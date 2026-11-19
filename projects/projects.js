@@ -82,23 +82,49 @@
       '<svg viewBox="0 0 120 56" class="pv pv-route-map" aria-hidden="true">' +
         '<path class="pv-road" d="M0 40 C20 40 24 18 46 18 S78 44 98 30 S114 10 120 12"/>' +
         '<path class="pv-trip" pathLength="100" d="M10 40 C24 39 28 18 46 18 S78 44 98 30"/>' +
+        '<path class="pv-flow" d="M10 40 C24 39 28 18 46 18 S78 44 98 30"/>' +
         '<circle class="pv-from" cx="10" cy="40" r="3.5"/>' +
-        '<g class="pv-pin" transform="translate(98 30)"><path d="M0 0c-4-5-6-7.5-6-10.5a6 6 0 0 1 12 0C6 -7.5 4 -5 0 0z"/><circle cx="0" cy="-10.5" r="2.2"/></g>' +
+        '<g transform="translate(98 30)"><g class="pv-pin"><ellipse class="pv-pin-shadow" cx="0" cy="1" rx="3.2" ry="1.1"/><path d="M0 0c-4-5-6-7.5-6-10.5a6 6 0 0 1 12 0C6 -7.5 4 -5 0 0z"/><circle cx="0" cy="-10.5" r="2.2"/></g></g>' +
       "</svg>",
     vr:
       '<svg viewBox="0 0 120 56" class="pv pv-vr" aria-hidden="true">' +
         '<ellipse class="pv-orbit" cx="60" cy="30" rx="50" ry="14"/>' +
         '<rect class="pv-headset" x="38" y="18" width="44" height="22" rx="9"/>' +
         '<circle class="pv-lens" cx="51" cy="29" r="5"/><circle class="pv-lens" cx="69" cy="29" r="5"/>' +
-        '<circle class="pv-ball" r="3.2"><animateMotion dur="3.6s" repeatCount="indefinite" path="M10 30 A50 14 0 1 0 110 30 A50 14 0 1 0 10 30"/></circle>' +
+        '<circle class="pv-ball" r="3.2" data-still="110,30"><animateMotion dur="3.6s" repeatCount="indefinite" path="M10 30 A50 14 0 1 0 110 30 A50 14 0 1 0 10 30"/></circle>' +
       "</svg>",
     pipeline:
       '<svg viewBox="0 0 120 56" class="pv pv-pipe" aria-hidden="true">' +
         '<line class="pv-pipe-line" x1="12" y1="28" x2="108" y2="28"/>' +
         '<line class="pv-pipe-fill" pathLength="100" x1="12" y1="28" x2="108" y2="28"/>' +
+        '<circle class="pv-packet" r="2.6" data-still="none"><animateMotion dur="2.6s" repeatCount="indefinite" path="M12 28 L108 28"/></circle>' +
         [12, 36, 60, 84, 108].map(function (x, i) { return '<circle class="pv-stage" cx="' + x + '" cy="28" r="6" style="--i:' + i + '"/>'; }).join("") +
       "</svg>"
   };
+
+  // Restart every CSS animation inside a preview from 0 (intro, then loop).
+  // A quick re-hover during a replay is ignored so it never stutters.
+  function replayPreview(svg) {
+    if (reduceMotion || !svg.getAnimations) return;
+    var now = Date.now();
+    if (svg._replayAt && now - svg._replayAt < 1600) return;
+    svg._replayAt = now;
+    svg.getAnimations({ subtree: true }).forEach(function (a) {
+      try { a.currentTime = 0; a.play(); } catch (err) {}
+    });
+  }
+  window.replayPreview = replayPreview;
+
+  // SVG <animateMotion> ignores the reduced-motion CSS, so drop it there
+  function stillIfReduced(root) {
+    if (!reduceMotion) return;
+    Array.prototype.forEach.call(root.querySelectorAll("animateMotion"), function (m) {
+      var el = m.parentNode, still = el.getAttribute("data-still");
+      m.remove();
+      if (still === "none") el.remove();
+      else if (still) { el.setAttribute("cx", still.split(",")[0]); el.setAttribute("cy", still.split(",")[1]); }
+    });
+  }
 
   /* ---------- Filters ---------- */
   function countFor(cat) {
@@ -187,12 +213,21 @@
         '<a class="project-link pj-details" href="#' + esc(p.slug) + '">Case study <span aria-hidden="true">→</span></a>' + links +
       "</div>";
     card.querySelector(".pj-preview").addEventListener("click", function () { go(p.slug); });
+    stillIfReduced(card);
     grid.appendChild(card);
   });
   apply();
 
-  // Every preview runs from page load and loops forever (CSS keyframes)
-  Array.prototype.forEach.call(grid.children, function (c) { c.classList.add("in"); });
+  // Previews: the intro plays once on load, then one small element loops
+  // (see projects.css). Hovering or focusing a card replays its intro.
+  Array.prototype.forEach.call(grid.children, function (c) {
+    c.classList.add("in");
+    var svg = c.querySelector(".pv");
+    if (svg) {
+      c.addEventListener("pointerenter", function (e) { if (e.pointerType !== "touch") replayPreview(svg); });
+      c.addEventListener("focusin", function () { replayPreview(svg); });
+    }
+  });
 
   /* ---------- Case-study panel ---------- */
   var lastFocus = null, openSlug = null;
@@ -236,6 +271,7 @@
       "</nav>";
     panel.scrollTop = 0;
     panelBody.scrollTop = 0;
+    stillIfReduced(panelBody);
     requestAnimationFrame(function () { panelBody.classList.add("in"); });
   }
 

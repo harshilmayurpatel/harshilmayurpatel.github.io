@@ -409,6 +409,24 @@
     }, 0.6);
   });
 
+  /* ---------- Build: hovering a card replays its mini chart ----------
+     The chart's intro plays once when the card scrolls in, then one element
+     loops (styles.css). Hover/focus restarts the intro from the beginning. */
+  Array.prototype.forEach.call(document.querySelectorAll(".project-card .mini-chart"), function (chart) {
+    var card = chart.closest(".project-card");
+    function replay() {
+      if (reduceMotion || !card.classList.contains("in") || !chart.getAnimations) return;
+      var now = Date.now();
+      if (chart._replayAt && now - chart._replayAt < 1600) return; // no stutter on quick re-hovers
+      chart._replayAt = now;
+      chart.getAnimations({ subtree: true }).forEach(function (a) {
+        try { a.currentTime = 0; a.play(); } catch (err) {}
+      });
+    }
+    card.addEventListener("pointerenter", function (e) { if (e.pointerType !== "touch") replay(); });
+    card.addEventListener("focusin", replay);
+  });
+
   /* ---------- Build: card spotlight follows the cursor ---------- */
   if (finePointer) {
     Array.prototype.forEach.call(document.querySelectorAll(".project-card"), function (card) {
