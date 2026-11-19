@@ -192,8 +192,12 @@
       function (entries) {
         entries.forEach(function (entry) {
           if (entry.isIntersecting) {
-            entry.target.classList.add("in");
-            io.unobserve(entry.target);
+            var el = entry.target;
+            el.classList.add("in");
+            io.unobserve(el);
+            // The stagger delay is only for the entrance: clear it so hover
+            // effects respond instantly afterwards
+            setTimeout(function () { el.style.transitionDelay = ""; }, 950);
           }
         });
       },
@@ -203,6 +207,18 @@
     revealEls.forEach(function (el) {
       io.observe(el);
     });
+
+    // Looping chart/preview animations pause while their card is off-screen
+    // (invisible anyway), so scrolling stays smooth on slower phones
+    var cards = document.querySelectorAll(".project-card");
+    if (cards.length) {
+      var loopIo = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+          entry.target.classList.toggle("is-offscreen", !entry.isIntersecting);
+        });
+      }, { rootMargin: "120px 0px" });
+      Array.prototype.forEach.call(cards, function (c) { loopIo.observe(c); });
+    }
   }
 
   /* =========================================================
@@ -420,7 +436,7 @@
       if (chart._replayAt && now - chart._replayAt < 1600) return; // no stutter on quick re-hovers
       chart._replayAt = now;
       chart.getAnimations({ subtree: true }).forEach(function (a) {
-        try { a.currentTime = 0; a.play(); } catch (err) {}
+        try { a.currentTime = 0; } catch (err) {} // no play(): keeps CSS in control (pausing)
       });
     }
     card.addEventListener("pointerenter", function (e) { if (e.pointerType !== "touch") replay(); });
@@ -892,9 +908,38 @@
       });
     }
 
+    // "open the Sokoban project", "show me Travel Buddy": opens that case
+    // study (on /projects/ directly, from home by going there)
+    var PROJECT_NAMES = [
+      ["ask-my-ai", "Ask my AI", /ask my ai|\brag\b|chat ?bot|ai assistant/],
+      ["nba-analysis", "the NBA project", /\bnba\b|basketball|scrap/],
+      ["ev-market", "the EV dashboard", /\bev\b|electric|vehicle|tableau/],
+      ["sokoban", "Sokoban", /sokoban|puzzle/],
+      ["travel-buddy", "Travel Buddy", /travel|buddy/],
+      ["vr-games", "the VR games", /\bvr\b|virtual reality|unity/],
+      ["portfolio", "this portfolio", /this (site|portfolio|website)/]
+    ];
+    function openProject(said) {
+      if (!/\b(open|show|see|view|go to|take me to)\b|case study/.test(said)) return false;
+      for (var i = 0; i < PROJECT_NAMES.length; i++) {
+        var p = PROJECT_NAMES[i];
+        if (!p[2].test(said)) continue;
+        haptic("success");
+        if (window.ProjectsPage) {
+          notify({ icon: "arrow", tone: "ok", text: "Opening " + p[1] });
+          window.ProjectsPage.open(p[0]);
+        } else {
+          leaveTo(PROJECTS_URL + "#" + p[0], "Opening " + p[1]);
+        }
+        return true;
+      }
+      return false;
+    }
+
     function handle(transcript) {
       var said = transcript.toLowerCase().trim();
       if (askAI(transcript)) return true;
+      if (openProject(said)) return true;
       for (var i = 0; i < COMMANDS.length; i++) {
         if (COMMANDS[i].re.test(said)) {
           haptic("success");
@@ -957,6 +1002,7 @@
         // Full sentences go straight to the AI, which tells a command
         // ("can you make it darker") from a question ("what has he built?")
         if (aiReady() && !/^(hey ai|ask|question)\b/i.test(text.trim()) && sentenceLike(text)) {
+          if (openProject(text.toLowerCase())) return;
           understand(text);
           return;
         }

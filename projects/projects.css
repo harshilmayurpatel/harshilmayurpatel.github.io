@@ -255,3 +255,7 @@ body.pj-locked{ overflow: hidden; }
   .pj-panel-body > *, .pv *{ animation: none !important; opacity: 1 !important; transform: none !important; stroke-dashoffset: 0 !important; }
   ::view-transition-group(*){ animation: none; }
 }
+
+/* While a case study is open, the floating mic and AI button step aside */
+body.pj-locked .mic-wrap, body.pj-locked .ask-fab{ opacity: 0; pointer-events: none; transform: scale(.85); }
+.mic-wrap{ transition: opacity .2s ease, transform .25s cubic-bezier(.3,1.4,.45,1); }

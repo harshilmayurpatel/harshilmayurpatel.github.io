@@ -110,7 +110,7 @@
     if (svg._replayAt && now - svg._replayAt < 1600) return;
     svg._replayAt = now;
     svg.getAnimations({ subtree: true }).forEach(function (a) {
-      try { a.currentTime = 0; a.play(); } catch (err) {}
+      try { a.currentTime = 0; } catch (err) {} // no play(): keeps CSS in control (pausing)
     });
   }
   window.replayPreview = replayPreview;
@@ -218,16 +218,20 @@
   });
   apply();
 
-  // Previews: the intro plays once on load, then one small element loops
-  // (see projects.css). Hovering or focusing a card replays its intro.
+  // Previews: the intro plays once when the card scrolls into view (the
+  // shared reveal in app.js adds .in, same as the home page), then one
+  // small element loops. Hovering or focusing a card replays its intro.
   Array.prototype.forEach.call(grid.children, function (c) {
-    c.classList.add("in");
     var svg = c.querySelector(".pv");
-    if (svg) {
-      c.addEventListener("pointerenter", function (e) { if (e.pointerType !== "touch") replayPreview(svg); });
-      c.addEventListener("focusin", function () { replayPreview(svg); });
-    }
+    if (!svg) return;
+    function replay() { if (c.classList.contains("in")) replayPreview(svg); }
+    c.addEventListener("pointerenter", function (e) { if (e.pointerType !== "touch") replay(); });
+    c.addEventListener("focusin", replay);
   });
+  // No IntersectionObserver (very old browsers): show everything now
+  if (!("IntersectionObserver" in window)) {
+    Array.prototype.forEach.call(grid.children, function (c) { c.classList.add("in"); });
+  }
 
   /* ---------- Case-study panel ---------- */
   var lastFocus = null, openSlug = null;

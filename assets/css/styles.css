@@ -1845,3 +1845,6 @@ body.ai-open .ask-fab, body.ai-open .mic-wrap{ opacity: 0; pointer-events: none;
 @view-transition{ navigation: auto; }
 ::view-transition-old(root), ::view-transition-new(root){ animation-duration: .28s; }
 @media (prefers-reduced-motion: reduce){ @view-transition{ navigation: none; } }
+
+/* Off-screen cards: freeze their looping animations (app.js toggles the class) */
+.project-card.is-offscreen *, .project-card.is-offscreen *::before, .project-card.is-offscreen *::after{ animation-play-state: paused !important; }
