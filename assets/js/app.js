@@ -795,8 +795,24 @@
       }
     }
 
+    // Questions go to Ask my AI: "ask …", or a real question
+    // ("what has he built with AI?") rather than a short command
+    function askAI(transcript, force) {
+      if (!window.AskAI || !window.AskAI.available) return false;
+      var said = transcript.toLowerCase().trim();
+      var m = said.match(/^(?:hey ai|ask(?: (?:the )?ai)?|question)[\s,:]+(.+)/);
+      var q = m ? m[1]
+        : (force || (/^(what|who|where|when|why|how|does|did|has|have|is|was|can|could|tell me|which)\b/.test(said) &&
+            said.split(/\s+/).length >= 4 && !/what can i (say|do)/.test(said))) ? transcript.trim() : "";
+      if (!q) return false;
+      haptic("success");
+      window.AskAI.open(q.charAt(0).toUpperCase() + q.slice(1), { send: true });
+      return true;
+    }
+
     function handle(transcript) {
       var said = transcript.toLowerCase().trim();
+      if (askAI(transcript)) return true;
       for (var i = 0; i < COMMANDS.length; i++) {
         if (COMMANDS[i].re.test(said)) {
           haptic("success");
@@ -855,6 +871,8 @@
         }
         var ok = false;
         for (var a = 0; a < res.length && !ok; a++) ok = handle(res[a].transcript);
+        // Nothing matched: a longer phrase is probably a question for the AI
+        if (!ok && text.trim().split(/\s+/).length >= 3) ok = askAI(text, true);
         handled = true;
         rec = null;
         setListening(false);

@@ -134,6 +134,15 @@
   </button>
 </div>
 
+<!-- Ask my AI: opens the RAG chat panel (assets/js/askai.js) -->
+<button class="ask-fab" id="askFab" type="button" aria-label="Ask my AI about Harshil" aria-controls="aiPanel" aria-expanded="false" hidden>
+  <svg viewBox="0 0 24 24" aria-hidden="true">
+    <path d="M4.5 6.5a3 3 0 0 1 3-3h9a3 3 0 0 1 3 3v6.5a3 3 0 0 1-3 3H11l-4.2 3.4c-.5.4-1.3 0-1.3-.6V16a3 3 0 0 1-1-2.2z" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"/>
+    <path class="ask-spark" d="M12 6.6l.9 2.2 2.2.9-2.2.9-.9 2.2-.9-2.2-2.2-.9 2.2-.9z" fill="currentColor"/>
+  </svg>
+  <span class="ask-label">Ask my AI</span>
+</button>
+
 <!-- iPhone haptics: Safari 18+ ticks when a native switch toggles -->
 <label class="haptic-switch" aria-hidden="true"><input type="checkbox" switch tabindex="-1" /></label>
 
@@ -347,9 +356,9 @@
         </article>
 
         <article class="project-card project-card-featured">
-          <p class="project-tag">Search Algorithms &middot; Python</p>
+          <p class="project-tag">Search Algorithms &middot; JavaScript</p>
           <h3 class="project-title">AI Puzzle Solver — Sokoban</h3>
-          <p class="project-desc">A puzzle-solving system using Depth-First Search to find valid solution paths, with an intelligent hint mechanism layered on top for gameplay assistance.</p>
+          <p class="project-desc">A retro Sokoban game with a built-in solver: Depth-First Search (plus BFS and A*) explores the puzzle's state space with deadlock pruning, powering an intelligent hint mechanism and a watch-the-AI-solve mode.</p>
           <svg class="mini-chart chart-path" viewBox="0 0 120 44" aria-hidden="true">
             <g class="grid-dots">
               <circle cx="10" cy="7"/><circle cx="35" cy="7"/><circle cx="60" cy="7"/><circle cx="85" cy="7"/><circle cx="110" cy="7"/>
@@ -364,7 +373,10 @@
           <div class="chip-row">
             <span class="chip chip-sm">DFS</span>
             <span class="chip chip-sm">Search Algorithms</span>
-            <span class="chip chip-sm">Python</span>
+            <span class="chip chip-sm">JavaScript</span>
+          </div>
+          <div class="project-footer">
+            <a class="project-link" href="projects/sokoban/"><svg class="icon"><use href="#i-external"/></svg>Play in browser</a>
           </div>
         </article>
       </div>
@@ -519,6 +531,8 @@
 </main>
 
 <script src="assets/js/celebrate.js"></script>
+<!-- data-api: the Hugging Face Space URL; the chat stays hidden until it's set -->
+<script src="assets/js/askai.js" data-api=""></script>
 <script src="assets/js/app.js"></script>
 </body>
 </html>
