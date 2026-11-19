@@ -25,6 +25,18 @@
   if (!API) { fab.hidden = true; window.AskAI = { available: false, open: function () {}, close: function () {} }; return; }
   fab.hidden = false;
 
+  // Shrink to an icon once the visitor scrolls, so the label never sits on
+  // top of page content. Hover or keyboard focus shows the label again.
+  var compactTick = false;
+  function updateCompact() {
+    compactTick = false;
+    fab.classList.toggle("is-compact", window.scrollY > 120);
+  }
+  window.addEventListener("scroll", function () {
+    if (!compactTick) { compactTick = true; requestAnimationFrame(updateCompact); }
+  }, { passive: true });
+  updateCompact();
+
   var panel, log, form, input, sendBtn, statusEl, chipsEl;
   var history = [];          // [{role, content}] sent back for follow-ups
   var busy = false, ctrl = null, health = "unknown", lastFocus = null;

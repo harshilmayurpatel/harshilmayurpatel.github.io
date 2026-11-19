@@ -1743,6 +1743,11 @@ main{ padding-left: var(--rail-w); }
 .ask-fab .ask-spark{ transform-origin: 12px 9.7px; animation: askTwinkle 3.2s ease-in-out infinite; }
 @keyframes askTwinkle{ 0%,70%,100%{ transform: scale(1); } 80%{ transform: scale(1.35) rotate(20deg); } }
 .ask-fab:hover{ transform: translateY(-2px); }
+/* Compact while scrolling: icon only, so it covers less of the page */
+.ask-fab .ask-label{ display: inline-block; max-width: 90px; overflow: hidden; white-space: nowrap; transition: max-width .3s cubic-bezier(.3,.8,.3,1), opacity .2s ease; }
+.ask-fab{ transition: transform .25s cubic-bezier(.3,1.4,.4,1), opacity .2s ease, box-shadow .25s ease, background-color .25s ease, padding .3s cubic-bezier(.3,.8,.3,1), gap .3s ease; }
+.ask-fab.is-compact:not(:hover):not(:focus-visible){ padding: 0 14px; gap: 0; }
+.ask-fab.is-compact:not(:hover):not(:focus-visible) .ask-label{ max-width: 0; opacity: 0; }
 .ask-fab:active{ transform: scale(.96); }
 .ask-fab:focus-visible{ outline: 2px solid var(--accent); outline-offset: 3px; }
 body.ai-open .ask-fab, body.ai-open .mic-wrap{ opacity: 0; pointer-events: none; transform: scale(.85); }

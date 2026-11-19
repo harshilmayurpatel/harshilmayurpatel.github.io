@@ -40,9 +40,10 @@ window.PROJECTS = [
     tagline: "An automated pipeline that scrapes real-time NBA statistics and turns them into 18+ visualizations of performance trends.",
     category: "data",
     tags: ["Python", "BeautifulSoup", "Pandas", "Matplotlib", "Seaborn", "Streamlit"],
-    badges: ["featured"],
+    badges: ["featured", "live"],
     preview: "bars",
     links: {
+      demo: "https://data-scrapping-aonbno2rm9z9adkfkvaxwy.streamlit.app/",
       code: "https://github.com/harshilmayurpatel/nba-stats-scraper"
     },
     stats: [["18+", "visualizations"], ["80%", "less redundancy"], ["<30s", "runtime"]],
@@ -67,26 +68,29 @@ window.PROJECTS = [
   {
     slug: "ev-market",
     title: "Electric Vehicle Market Analysis",
-    tagline: "An interactive Tableau dashboard on U.S. EV adoption: growth trends, state-level maps and BEV vs. PHEV mix.",
+    tagline: "An interactive Tableau dashboard on 150K+ EV registrations: growth by model year, state-level maps, top makers and BEV vs. PHEV mix.",
     category: "data",
     tags: ["Tableau", "Excel", "Data Cleaning", "KPIs"],
-    badges: ["featured"],
+    badges: ["featured", "live"],
     preview: "map",
     links: {
+      demo: "https://public.tableau.com/app/profile/harshil.patel1403/viz/ElectricVehicleDataAnalysis_17743671212720/Dashboard1",
       code: "https://github.com/harshilmayurpatel/Electric-Vehicle-Data-Analysis"
     },
-    stats: [["KPI", "tracking"], ["State", "-level maps"], ["BEV/PHEV", "comparison"]],
+    stats: [["150K+", "EV records"], ["77.6%", "battery electric"], ["52.7%", "Tesla share"]],
     caseStudy: {
-      problem: "EV adoption data is large and uneven across states, which makes trends hard to see in raw tables.",
+      problem: "150,000+ EV registration records are hard to read as raw tables: growth, market leaders and the BEV vs. PHEV split don't stand out.",
       built: "An interactive Tableau dashboard that tracks EV adoption across the U.S. over time and by state.",
       how: [
-        "Cleaned and prepared the vehicle registration data in Excel before loading it into Tableau.",
+        "Cleaned the registration data in Excel: kept model years 2010 onward, removed missing electric-range values and standardized BEV and PHEV labels.",
         "Built KPI tiles for headline numbers, a growth-over-time trend, and state-level adoption maps.",
         "Compared battery electric (BEV) and plug-in hybrid (PHEV) distribution side by side.",
         "Added filters so viewers can drill into a state or a vehicle type."
       ],
       results: [
-        "One dashboard answers where EV adoption is growing, how fast, and which EV types lead.",
+        "Registrations climb from under 1,000 for model year 2011 to a peak of 37,100 for 2023.",
+        "Battery electric vehicles are 77.6% of the fleet, and Tesla alone is 52.7%, more than the next nine makers combined.",
+        "Average electric range is 67.8 miles; 41.8% of vehicles qualify for clean-fuel (CAFV) incentives.",
         "Published on Tableau Public for anyone to explore."
       ],
       role: "Solo project: data cleaning, dashboard design and storytelling."
