@@ -228,5 +228,23 @@
     if (panel && panel.classList.contains("open")) close(); else open();
   });
 
-  window.AskAI = { available: true, open: open, close: close };
+  // Mic helper: what did the visitor mean? Resolves to an action id
+  // ("dark", "projects", "ask", "none", …) or null if the API is unreachable.
+  function intent(text) {
+    var c = window.AbortController ? new AbortController() : null;
+    var t = setTimeout(function () { if (c) c.abort(); }, 6000);
+    return fetch(API + "/intent", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ text: String(text).slice(0, 200) }),
+      signal: c ? c.signal : undefined
+    }).then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (j) { return j && j.action ? j.action : null; })
+      .catch(function () { return null; })
+      .then(function (a) { clearTimeout(t); return a; });
+  }
+
+  function isOpen() { return !!(panel && panel.classList.contains("open")); }
+
+  window.AskAI = { available: true, open: open, close: close, intent: intent, isOpen: isOpen };
 })();

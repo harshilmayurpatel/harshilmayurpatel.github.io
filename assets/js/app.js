@@ -797,17 +797,65 @@
 
     // Questions go to Ask my AI: "ask …", or a real question
     // ("what has he built with AI?") rather than a short command
+    function aiReady() { return !!(window.AskAI && window.AskAI.available); }
+    function escapeHTML(s) {
+      return String(s).replace(/[&<>"']/g, function (c) {
+        return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+      });
+    }
+    // Sentences ("can you make it darker", "what has he built with AI") are
+    // better understood by the AI than by the keyword patterns
+    function sentenceLike(text) {
+      var said = text.toLowerCase().trim();
+      return /^(what|who|where|when|why|how|does|did|has|have|is|was|can|could|would|will|please|i want|i'd like|tell me|which|show me what)\b/.test(said) &&
+        said.split(/\s+/).length >= 4 && !/what can i (say|do)/.test(said);
+    }
+
     function askAI(transcript, force) {
-      if (!window.AskAI || !window.AskAI.available) return false;
+      if (!aiReady()) return false;
       var said = transcript.toLowerCase().trim();
       var m = said.match(/^(?:hey ai|ask(?: (?:the )?ai)?|question)[\s,:]+(.+)/);
-      var q = m ? m[1]
-        : (force || (/^(what|who|where|when|why|how|does|did|has|have|is|was|can|could|tell me|which)\b/.test(said) &&
-            said.split(/\s+/).length >= 4 && !/what can i (say|do)/.test(said))) ? transcript.trim() : "";
+      var q = m ? m[1] : force ? transcript.trim() : "";
       if (!q) return false;
       haptic("success");
       window.AskAI.open(q.charAt(0).toUpperCase() + q.slice(1), { send: true });
       return true;
+    }
+
+    function notUnderstood() {
+      haptic("error");
+      notify({ icon: "alert", tone: "warn", html: "Didn't catch that<small>say “help”</small>", dur: 2600 }, { replace: true });
+    }
+
+    // AI intent ids (ask-harshil-api /intent) -> the command labels above
+    var INTENT_TO_SAY = {
+      dark: "dark mode", light: "light mode", projects: "show projects", experience: "show experience",
+      skills: "show skills", about: "about Harshil", contact: "contact", resume: "download resume",
+      copy_email: "copy email", github: "open GitHub", linkedin: "open LinkedIn", top: "go to top",
+      surprise: "surprise me", help: "help"
+    };
+
+    function understand(text) {
+      notify({ icon: "spark", tone: "info", html: "Thinking…<small>“" + escapeHTML(text) + "”</small>", dur: 6500 }, { replace: true });
+      window.AskAI.intent(text).then(function (action) {
+        if (action === "theme") { haptic("success"); themeBtn.click(); return; }
+        if (action === "ask") {
+          notify({ icon: "spark", tone: "ok", text: "Asking my AI", dur: 1400 }, { replace: true });
+          askAI(text, true);
+          return;
+        }
+        var say = INTENT_TO_SAY[action];
+        var cmd = say && COMMANDS.filter(function (c) { return c.say === say; })[0];
+        if (cmd) {
+          if (window.AskAI.isOpen && window.AskAI.isOpen()) window.AskAI.close();
+          haptic("success");
+          cmd.run();
+          return;
+        }
+        // API unreachable: a longer phrase is probably still a question
+        if (action === null && text.trim().split(/\s+/).length >= 3 && askAI(text, true)) return;
+        notUnderstood();
+      });
     }
 
     function handle(transcript) {
@@ -869,17 +917,24 @@
           islandEl.classList.add("hearing");
           return;
         }
-        var ok = false;
-        for (var a = 0; a < res.length && !ok; a++) ok = handle(res[a].transcript);
-        // Nothing matched: a longer phrase is probably a question for the AI
-        if (!ok && text.trim().split(/\s+/).length >= 3) ok = askAI(text, true);
         handled = true;
         rec = null;
         setListening(false);
-        if (!ok) {
-          haptic("error");
-          notify({ icon: "alert", tone: "warn", html: "Didn't catch that<small>say “help”</small>", dur: 2600 }, { replace: true });
+        // Full sentences go straight to the AI, which tells a command
+        // ("can you make it darker") from a question ("what has he built?")
+        if (aiReady() && !/^(hey ai|ask|question)\b/i.test(text.trim()) && sentenceLike(text)) {
+          understand(text);
+          return;
         }
+        var ok = false;
+        for (var a = 0; a < res.length && !ok; a++) ok = handle(res[a].transcript);
+        if (ok) return;
+        // No quick match: let the AI work out what was meant
+        if (aiReady()) {
+          understand(text);
+          return;
+        }
+        notUnderstood();
       };
       session.onerror = function (e) {
         if (!live()) return;
