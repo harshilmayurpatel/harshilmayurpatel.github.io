@@ -943,12 +943,14 @@ main{ padding-left: var(--rail-w); }
   --rip-spark: rgba(255,255,255,.55);
 }
 
-::view-transition-old(root),
-::view-transition-new(root){
+/* Scoped to theme switches only: page changes and the projects filter use
+   their own (default) view transitions */
+:root.theme-switching::view-transition-old(root),
+:root.theme-switching::view-transition-new(root){
   animation: none;
   mix-blend-mode: normal;
 }
-::view-transition-new(root){
+:root.theme-switching::view-transition-new(root){
   -webkit-mask-image: radial-gradient(circle at var(--vt-x) var(--vt-y), #000 calc(var(--vt-r) - var(--vt-feather)), transparent var(--vt-r));
           mask-image: radial-gradient(circle at var(--vt-x) var(--vt-y), #000 calc(var(--vt-r) - var(--vt-feather)), transparent var(--vt-r));
   animation: rippleReveal var(--vt-dur) both;
@@ -1802,3 +1804,27 @@ body.ai-open .ask-fab, body.ai-open .mic-wrap{ opacity: 0; pointer-events: none;
   .ai-panel, .ask-fab, .ai-msg{ transition: opacity .15s ease; animation: none; transform: none; }
   .ask-fab .ask-spark, .ai-dots i{ animation: none; }
 }
+
+/* ---------- Build: "See all projects" link to /projects/ ---------- */
+.see-all-wrap{ margin-top: 34px; display: flex; flex-direction: column; align-items: center; gap: 10px; text-align: center; }
+.see-all{
+  display: inline-flex; align-items: center; gap: 10px;
+  padding: 13px 18px 13px 22px; border-radius: 999px;
+  background: var(--ink); color: var(--on-ink);
+  font: 600 15px/1 var(--font-body);
+  box-shadow: 0 10px 26px rgba(26,30,43,.14);
+  transition: transform .25s cubic-bezier(.3,1.4,.45,1), box-shadow .25s ease, background .25s ease;
+}
+.see-all:hover{ transform: translateY(-2px); box-shadow: 0 16px 34px rgba(26,30,43,.2); }
+.see-all:active{ transform: scale(.97); }
+.see-all:focus-visible{ outline: 2px solid var(--accent); outline-offset: 3px; }
+.see-all-n{ min-width: 24px; height: 24px; padding: 0 7px; display: grid; place-items: center; border-radius: 999px; background: var(--accent); color: #fff; font: 600 12px/1 var(--font-mono); }
+:root[data-theme="dark"] .see-all-n{ color: #0E1119; }
+.see-all-arrow{ display: inline-block; transition: transform .3s cubic-bezier(.3,1.4,.45,1); }
+.see-all:hover .see-all-arrow{ transform: translateX(4px); }
+.see-all-note{ font-size: 13px; color: var(--muted-2); }
+
+/* Smooth cross-fade between pages (home ⇄ /projects/) where supported */
+@view-transition{ navigation: auto; }
+::view-transition-old(root), ::view-transition-new(root){ animation-duration: .28s; }
+@media (prefers-reduced-motion: reduce){ @view-transition{ navigation: none; } }

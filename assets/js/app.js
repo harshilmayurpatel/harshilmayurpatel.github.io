@@ -669,9 +669,19 @@
     var active = document.querySelector(".rail-node.active");
     return active ? active.getAttribute("data-section") : "top";
   }
+  // Other pages (e.g. /projects/) set data-home / data-projects on <body>
+  var onProjectsPage = document.body.classList.contains("page-projects");
+  var HOME_URL = document.body.getAttribute("data-home") || "./";
+  var PROJECTS_URL = document.body.getAttribute("data-projects") || "projects/";
+  function leaveTo(url, label) {
+    notify({ icon: "arrow", tone: "ok", text: label });
+    setTimeout(function () { location.href = url; }, reduceMotion ? 0 : 380); // let the island show first
+  }
   function goTo(id, label) {
+    if (onProjectsPage && id === "build") id = "pjGrid";
     var el = id === "top" ? document.body : document.getElementById(id);
-    if (!el) return;
+    // Section lives on the home page: go there
+    if (!el) { leaveTo(HOME_URL + "#" + id, label); return; }
     if (id === "top") window.scrollTo({ top: 0, behavior: reduceMotion ? "auto" : "smooth" });
     else el.scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "start" });
     notify({ icon: "arrow", tone: "ok", text: label });
@@ -686,6 +696,12 @@
     { re: /\b(light|day|white|bright)\b|go light|lights? on/, say: "light mode",
       when: function () { return isDark(); },
       run: function () { if (isDark()) themeBtn.click(); else notify({ icon: "sun", tone: "info", text: "Already in light mode" }); } },
+    { re: /all (the |his |your )?projects|every project|see more|more projects|projects page|full (list|catalog)/, say: "all projects",
+      when: function () { return !onProjectsPage; },
+      run: function () { if (onProjectsPage) goTo("build", "All projects"); else leaveTo(PROJECTS_URL, "Opening all projects"); } },
+    { re: /\b(go )?home\b|main page|back to (the )?(home|main)/, say: "go home",
+      when: function () { return onProjectsPage; },
+      run: function () { if (onProjectsPage) leaveTo(HOME_URL, "Going home"); else goTo("top", "Back to top"); } },
     { re: /project|work|built|build|portfolio|show (me )?(your )?stuff/, say: "show projects",
       when: function () { return currentSection() !== "build"; },
       run: function () { goTo("build", "Showing projects"); } },
@@ -733,7 +749,7 @@
       html: "Things you can say" +
         '<span class="cmd-list"><span>dark / light mode</span><span>show projects</span>' +
         "<span>show skills</span><span>show experience</span><span>about Harshil</span>" +
-        "<span>contact</span><span>download resume</span><span>copy email</span>" +
+        "<span>all projects</span><span>contact</span><span>download resume</span><span>copy email</span>" +
         "<span>open GitHub</span><span>surprise me</span></span>" +
         "<small>Speech is processed by your browser's speech service.</small>"
     }, { replace: true });
@@ -829,7 +845,7 @@
 
     // AI intent ids (ask-harshil-api /intent) -> the command labels above
     var INTENT_TO_SAY = {
-      dark: "dark mode", light: "light mode", projects: "show projects", experience: "show experience",
+      dark: "dark mode", light: "light mode", projects: "show projects", all_projects: "all projects", experience: "show experience",
       skills: "show skills", about: "about Harshil", contact: "contact", resume: "download resume",
       copy_email: "copy email", github: "open GitHub", linkedin: "open LinkedIn", top: "go to top",
       surprise: "surprise me", help: "help"
