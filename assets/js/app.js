@@ -877,7 +877,7 @@
       notify({ icon: "alert", tone: "warn", html: "Didn't catch that<small>say “help”</small>", dur: 2600 }, { replace: true });
     }
 
-    // AI intent ids (ask-harshil-api /intent) -> the command labels above
+    // AI intent ids (ask-my-ai repo, /intent) -> the command labels above
     var INTENT_TO_SAY = {
       dark: "dark mode", light: "light mode", projects: "show projects", all_projects: "all projects", experience: "show experience",
       skills: "show skills", about: "about Harshil", contact: "contact", resume: "download resume",

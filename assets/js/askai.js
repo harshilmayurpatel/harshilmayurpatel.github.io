@@ -1,5 +1,5 @@
 /* =========================================================
-   Ask my AI: chat panel for the RAG assistant (ask-harshil-api)
+   Ask my AI: chat panel for the RAG assistant (github.com/harshilmayurpatel/ask-my-ai)
    window.AskAI = { open(question?, { send }), close(), available }
    ========================================================= */
 (function () {

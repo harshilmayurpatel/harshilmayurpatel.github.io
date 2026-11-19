@@ -13,7 +13,7 @@ window.PROJECTS = [
     badges: ["new", "featured"],
     preview: "chat",
     links: {
-      code: "https://github.com/harshilmayurpatel/ask-harshil-api"
+      code: "https://github.com/harshilmayurpatel/ask-my-ai"
     },
     stats: [["19/19", "retrieval checks"], ["2", "AI endpoints"], ["$0", "to run"]],
     caseStudy: {
